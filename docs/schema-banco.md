@@ -31,7 +31,7 @@ products_canonical (catálogo normalizado)
 ## Tabelas
 
 ### 1. users
-Usuários do app (login, lista de compras, alertas).
+Usuários do app têm **conta própria** (login por e-mail): listas de compras, alertas de preço e envio de notas ficam vinculados ao `user_id`. A tabela `users` armazena o que identifica o titular da conta (ex.: e-mail) para login e para cumprimento de LGPD na exclusão.
 
 | Coluna      | Tipo         | Descrição                |
 |-------------|--------------|--------------------------|
@@ -58,12 +58,12 @@ Cadastro de mercados (um por CNPJ).
 ---
 
 ### 3. receipts
-Uma nota fiscal por linha (chave única).
+Uma nota fiscal por linha (chave única). O **user_id** indica quem enviou a nota; pode ser **NULL** após exclusão de conta (anonimização LGPD — ver seção abaixo).
 
 | Coluna        | Tipo         | Descrição                |
 |---------------|--------------|--------------------------|
 | id            | BIGSERIAL    | PK                       |
-| user_id       | BIGINT       | FK users (quem enviou)   |
+| user_id       | BIGINT       | FK users (quem enviou); **NULL** = anonimizado |
 | store_id      | BIGINT       | FK stores                |
 | chave_acesso  | VARCHAR(44)  | único                    |
 | numero        | VARCHAR(20)  | número da nota           |
@@ -275,6 +275,26 @@ Sinalizar preços suspeitos (possível erro de digitação ou dado ruim).
 - Por `product_id`, calcule mediana (e opcionalmente desvio) dos `valor_unitario` em `prices` (últimos X dias ou todas as observações).
 - Se um preço novo estiver, por exemplo, a mais de 2–3 desvios da mediana (muito alto ou muito baixo), criar linha em `price_outliers`.
 - No app/API: para “preço em cada mercado”, você pode filtrar `WHERE price_id NOT IN (SELECT price_id FROM price_outliers)` ou dar peso menor para esses preços. Opcional: fila para revisão humana ou descarte.
+
+---
+
+## Conta do usuário e exclusão de dados (LGPD)
+
+O usuário tem **conta própria** (tabela `users`). Quando pedir **exclusão de conta** ou **exclusão dos dados que o identifiquem** (LGPD), não podemos perder notas nem histórico de preços — só remover o que identifica a pessoa.
+
+**O que fazer na exclusão:**
+
+| Ação | Motivo |
+|------|--------|
+| **Excluir** o registro em `users` | Remove a conta e o login. |
+| **Excluir** `shopping_lists` e `shopping_list_items` do usuário | Dados pessoais (listas dele). |
+| **Excluir** `price_alerts` do usuário | Preferências/alertas pessoais. |
+| **Anonimizar** as notas: `UPDATE receipts SET user_id = NULL WHERE user_id = ?` | Remove o vínculo "quem enviou esta nota"; a nota continua no sistema. |
+| **Manter** `receipts` (com `user_id` NULL), `receipt_items_raw`, `stores`, `products_canonical`, `product_aliases`, `prices`, `price_outliers` | Notas, itens, mercados, catálogo e preços são dados agregados/anonimizados necessários para o serviço (preço por mercado, onde comprar, etc.). |
+
+**Não excluir** a **chave de acesso** da nota (`chave_acesso` em `receipts`): ela serve para deduplicar notas e manter integridade do histórico. O que se remove é apenas o **vínculo com o usuário** (`user_id`), não os dados da nota nem os preços derivados.
+
+Resumo: **excluir conta e dados que identificam o titular; manter todas as notas (com user_id NULL) e todo o histórico de preços e produtos.**
 
 ---
 

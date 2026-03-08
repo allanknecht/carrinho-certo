@@ -20,6 +20,8 @@ Ver [docs/estrutura-repositorio.md](docs/estrutura-repositorio.md) para detalhes
 |-----------|----------|
 | [docs/estrutura-repositorio.md](docs/estrutura-repositorio.md) | Estrutura do repo, API + Worker no mesmo repositório. |
 | [docs/schema-banco.md](docs/schema-banco.md) | Esquema do banco, tabelas, regras de preço relevante (≥2 notas), histórico, outliers. |
+| [docs/objetivos-requisitos-casos-de-uso.md](docs/objetivos-requisitos-casos-de-uso.md) | Objetivos e justificativa, requisitos (RF/RNF), diagrama ER, casos de uso e fluxos. |
+| [docs/parecer-projeto-faculdade.md](docs/parecer-projeto-faculdade.md) | Parecer para projeto de faculdade e itens a fazer. |
 
 ---
 
