@@ -1,4 +1,5 @@
 # Artefatos de execução do scraper (não versionar)
+scraper/
 scraper/output/
 
 # Ruby

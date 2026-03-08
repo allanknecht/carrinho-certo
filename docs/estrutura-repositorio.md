@@ -42,3 +42,6 @@ Em `docs/`:
 
 - **schema-banco.md** — esquema do banco (tabelas, regras de preço relevante, histórico, outliers).
 - **estrutura-repositorio.md** — este arquivo (estrutura do repo, API + Worker no mesmo repo).
+- **objetivos-requisitos-casos-de-uso.md** — objetivos, justificativa, requisitos (RF/RNF), diagrama ER e casos de uso.
+- **telas-do-app.md** — telas do app mobile (auth, envio de nota, produtos, listas, conta), alinhadas aos requisitos.
+- **parecer-projeto-faculdade.md** — status da documentação, itens já cobertos e pendentes.

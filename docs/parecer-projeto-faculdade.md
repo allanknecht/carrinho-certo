@@ -15,6 +15,7 @@ Este documento consolida o **estado atual da documentação** do projeto Carrinh
 | **Casos de uso e fluxos** | Atores, casos de uso (UC01–UC07) e fluxos principais (envio de nota, exclusão de conta) documentados. |
 | **Modelo de dados** | Esquema completo (11 tabelas), tipos, chaves e regras de negócio (preço relevante ≥2 notas, outliers, LGPD) em [schema-banco.md](schema-banco.md). |
 | **Arquitetura** | Estrutura do repositório (monorepo), backend API + Worker, app MAUI, em [estrutura-repositorio.md](estrutura-repositorio.md). |
+| **Telas do aplicativo** | Lista de telas do app mobile (autenticação, envio de nota, produtos, listas de compras, conta), alinhadas aos requisitos, em [telas-do-app.md](telas-do-app.md). |
 | **Regras de negócio** | Preço relevante, histórico por período, detecção de outlier e política de exclusão de dados (LGPD) descritas no schema. |
 | **Stack tecnológica** | Definida (Ruby, PostgreSQL, .NET MAUI). |
 | **Conformidade LGPD** | Política de exclusão de conta descrita: anonimização de `user_id` em `receipts`, preservação de notas e histórico de preços. |
