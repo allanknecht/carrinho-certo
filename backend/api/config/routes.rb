@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  post "auth/login", to: "auth#login"
+  resources :users, only: [:create]
   resources :receipts, only: [:create]
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

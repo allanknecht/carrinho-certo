@@ -1,9 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  source_url: MyText
-  status: MyString
+  source_url: https://dfe-portal.example.com/q
+  status: queued
+  user: one
 
 two:
-  source_url: MyText
-  status: MyString
+  source_url: https://dfe-portal.example.com/r
+  status: queued
+  user: one

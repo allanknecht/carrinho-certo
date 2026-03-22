@@ -77,7 +77,7 @@ Pode ser opcional no primeiro momento; o foco do MVP é o login para vincular no
 
 Requer autenticação: header `Authorization: Bearer <token>`.
 
-**Request (JSON)**
+**Request (JSON)** — corpo **plano** no root (`source_url` direto no objeto JSON). Não usar envelope `receipt`.
 
 ```json
 {

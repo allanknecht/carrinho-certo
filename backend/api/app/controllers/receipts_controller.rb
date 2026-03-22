@@ -1,20 +1,22 @@
 class ReceiptsController < ApplicationController
-  def create
-    receipt = Receipt.create!(
-      source_url: receipt_params[:source_url],
-      status: "queued"
-    )
+  before_action :authenticate_user!
 
-    render json: {
-      id: receipt.id,
-      status: receipt.status,
-      message: "Nota recebida e enfileirada para processamento."
-    }, status: :accepted
+  def create
+    receipt = current_user.receipts.build(receipt_params.merge(status: "queued"))
+    if receipt.save
+      render json: {
+        id: receipt.id,
+        status: receipt.status,
+        message: "Nota recebida e enfileirada para processamento."
+      }, status: :accepted
+    else
+      render json: { errors: receipt.errors.full_messages }, status: :bad_request
+    end
   end
 
   private
 
   def receipt_params
-    params.require(:receipt).permit(:source_url)
+    params.permit(:source_url)
   end
 end
