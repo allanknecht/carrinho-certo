@@ -44,7 +44,7 @@ Rails.application.configure do
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 
-  # Jobs rodam em threads no mesmo processo (sem precisar de `bin/jobs` em dev).
+  # Run jobs in-process on a thread pool (no separate `bin/jobs` process in dev).
   config.active_job.queue_adapter = :async
 
   # Highlight code that triggered database queries in logs.

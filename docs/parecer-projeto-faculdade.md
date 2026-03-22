@@ -13,8 +13,8 @@ Este documento consolida o **estado atual da documentação** do projeto Carrinh
 | **Requisitos** | Requisitos funcionais e não funcionais numerados (RF01–RF11, RNF01–RNF04) no mesmo documento. |
 | **Diagrama ER** | Modelo entidade-relacionamento em Mermaid, alinhado ao [schema do banco](schema-banco.md), no documento de objetivos e casos de uso. |
 | **Casos de uso e fluxos** | Atores, casos de uso (UC01–UC07) e fluxos principais (envio de nota, exclusão de conta) documentados. |
-| **Modelo de dados** | Esquema completo (11 tabelas), tipos, chaves e regras de negócio (preço relevante ≥2 notas, outliers, LGPD) em [schema-banco.md](schema-banco.md). |
-| **Arquitetura** | Estrutura do repositório (monorepo), backend API + Worker, app MAUI, em [estrutura-repositorio.md](estrutura-repositorio.md). |
+| **Modelo de dados** | [schema-banco.md](schema-banco.md) em inglês: tabelas **implementadas** (users, stores, receipts, receipt_items_raw), pipeline de processamento, tabelas planejadas e LGPD. |
+| **Arquitetura** | [estrutura-repositorio.md](estrutura-repositorio.md) (inglês): monorepo, Rails API + Active Job. |
 | **Telas do aplicativo** | Lista de telas do app mobile (autenticação, envio de nota, produtos, listas de compras, conta), alinhadas aos requisitos, em [telas-do-app.md](telas-do-app.md). |
 | **Regras de negócio** | Preço relevante, histórico por período, detecção de outlier e política de exclusão de dados (LGPD) descritas no schema. |
 | **Stack tecnológica** | Definida (Ruby, PostgreSQL, .NET MAUI). |
@@ -28,9 +28,9 @@ Documentos ou seções ainda não elaborados e recomendados para fechamento da b
 
 | # | Item | Recomendação |
 |---|------|--------------|
-| 1 | **Autenticação** | Documentar o fluxo de autenticação (e-mail + senha, JWT, OAuth), armazenamento de credenciais (hash) e uso de token na API. |
-| 2 | **Contrato da API** | Elaborar especificação dos endpoints (método, path, corpo e resposta) ou documento OpenAPI/Swagger. |
-| 3 | **Diagrama de arquitetura** | Incluir diagrama (ex.: Mermaid) representando App → API → Banco; Worker → Banco; fila de jobs. |
+| 1 | **Autenticação** | Parcialmente coberto em [api-contrato.md](api-contrato.md) (inglês): e-mail + senha, `password_digest`, Bearer token. Completar com diagrama de fluxo e, se desejado, OpenAPI. |
+| 2 | **Contrato da API** | Parcialmente coberto em [api-contrato.md](api-contrato.md) (inglês). Pendente: OpenAPI/Swagger e `GET /receipts/:id`. |
+| 3 | **Diagrama de arquitetura** | Incluir diagrama (ex.: Mermaid): App → API → PostgreSQL; Active Job → parser HTTP → PostgreSQL. |
 | 4 | **Normalização do modelo de dados** | Incluir em `schema-banco.md` subseção que explicite a aderência às formas normais (1FN, 2FN, 3FN), com exemplos. |
 | 5 | **Estratégia de testes** | Documentar abordagem de testes (unitários, integração, e2e) e ferramentas previstas (RSpec, xUnit, etc.). |
 | 6 | **Cronograma** | Definir e documentar fases e marcos (ex.: Fase 1 – API e banco; Fase 2 – Worker; Fase 3 – App MVP). |
@@ -46,3 +46,16 @@ Documentos ou seções ainda não elaborados e recomendados para fechamento da b
 | **Pendências** | Itens listados na seção **Itens pendentes de documentação** (autenticação, contrato da API, diagrama de arquitetura, normalização em texto, estratégia de testes, cronograma, referências). |
 
 Recomenda-se tratar os itens pendentes conforme a prioridade do projeto e a necessidade de alinhamento com equipe e stakeholders.
+
+---
+
+## Implementation status (English)
+
+**Backend (Rails API)** — as of recent sprint:
+
+- **Auth:** `POST /users`, `POST /auth/login`, `Authorization: Bearer <token>` on protected routes.
+- **Receipts:** `POST /receipts` accepts flat JSON `{ "source_url": "..." }`, returns `202` with `queued`; `409` if access key from URL already exists.
+- **Job:** `ProcessReceiptJob` fetches URL, runs `NfceConsultationParser` (NF-e XML + HTML, including SVRS QrCode layout), persists `stores`, `receipts`, `receipt_items_raw`; statuses `queued` → `processing` → `done` / `failed`.
+- **DB:** `users`, `stores`, `receipts`, `receipt_items_raw` (see [schema-banco.md](schema-banco.md)).
+
+**Not implemented yet:** `GET /receipts/:id`, product normalization, `prices` / shopping list endpoints per contract skeleton.

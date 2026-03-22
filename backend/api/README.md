@@ -1,24 +1,33 @@
-# README
+# Carrinho Certo API (Rails)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+JSON API for receipt ingestion (NFC-e consultation URLs), authentication, and (planned) product prices.
 
-Things you may want to cover:
+## Docs
 
-* Ruby version
+- **[API contract](../../docs/api-contrato.md)** — endpoints, auth, receipt flow, error codes.
+- **[Database schema](../../docs/schema-banco.md)** — tables and processing pipeline.
 
-* System dependencies
+## Local run (Docker)
 
-* Configuration
+From repo root:
 
-* Database creation
+```bash
+docker compose up --build
+```
 
-* Database initialization
+API: `http://localhost:3000`. Set `DATABASE_URL` if running `bin/rails` outside Compose.
 
-* How to run the test suite
+## Tests
 
-* Services (job queues, cache servers, search engines, etc.)
+```bash
+cd backend/api
+bundle install
+bin/rails db:test:prepare
+bin/rails test
+```
 
-* Deployment instructions
+Use `minitest` `~> 5.25` (see `Gemfile`) for Rails 8 test runner compatibility.
 
-* ...
+## Stack
+
+- Rails 8, PostgreSQL, Active Job (`async` in development, `:test` in test env).

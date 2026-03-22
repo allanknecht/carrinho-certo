@@ -1,5 +1,7 @@
 # Telas do aplicativo – Carrinho Certo
 
+> **English readers:** Screen inventory in Portuguese. For API behavior (receipts, auth), see [api-contrato.md](api-contrato.md).
+
 Este documento lista as **telas necessárias** para o app mobile (front-end), alinhadas aos requisitos e fluxos descritos em [objetivos-requisitos-casos-de-uso.md](objetivos-requisitos-casos-de-uso.md).
 
 ---

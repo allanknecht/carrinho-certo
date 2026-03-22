@@ -1,5 +1,7 @@
 # Objetivos, justificativa, requisitos, modelo ER e casos de uso
 
+> **English readers:** This document stays in Portuguese (academic brief). For the **implemented API and database**, see [api-contrato.md](api-contrato.md) and [schema-banco.md](schema-banco.md) (English).
+
 Documento único com: objetivos e justificativa do projeto, requisitos funcionais e não funcionais, diagrama ER e casos de uso / fluxos.
 
 ---
