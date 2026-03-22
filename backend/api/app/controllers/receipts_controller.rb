@@ -4,7 +4,7 @@ class ReceiptsController < ApplicationController
   def create
     chave = Receipt.chave_from_source_url(receipt_params[:source_url].to_s)
     if chave.present? && Receipt.exists?(chave_acesso: chave)
-      return render json: { error: "Nota já cadastrada", chave_acesso: chave }, status: :conflict
+      return render json: { error: "Receipt already registered", chave_acesso: chave }, status: :conflict
     end
 
     receipt = current_user.receipts.build(receipt_params.merge(status: "queued"))
@@ -13,7 +13,7 @@ class ReceiptsController < ApplicationController
       render json: {
         id: receipt.id,
         status: receipt.status,
-        message: "Nota recebida e enfileirada para processamento."
+        message: "Receipt received and queued for processing."
       }, status: :accepted
     else
       render json: { errors: receipt.errors.full_messages }, status: :bad_request

@@ -54,7 +54,7 @@ class ReceiptsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :conflict
     body = JSON.parse(response.body)
-    assert_equal "Nota já cadastrada", body["error"]
+    assert_equal "Receipt already registered", body["error"]
     assert_equal chave, body["chave_acesso"]
   end
 

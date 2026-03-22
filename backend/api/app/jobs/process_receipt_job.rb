@@ -22,7 +22,7 @@ class ProcessReceiptJob < ApplicationJob
 
     if parsed.chave_acesso.present? &&
         Receipt.where(chave_acesso: parsed.chave_acesso).where.not(id: receipt.id).exists?
-      raise "Nota já cadastrada (chave duplicada)."
+      raise "Receipt already registered (duplicate access key)."
     end
 
     store = resolve_store(parsed)
@@ -57,7 +57,7 @@ class ProcessReceiptJob < ApplicationJob
   rescue NfceConsultationParser::ParseError => e
     mark_receipt_failed(receipt, e.message)
   rescue ActiveRecord::RecordNotUnique => e
-    msg = e.message.to_s.include?("chave_acesso") ? "Nota já cadastrada (chave duplicada)." : e.message
+    msg = e.message.to_s.include?("chave_acesso") ? "Receipt already registered (duplicate access key)." : e.message
     mark_receipt_failed(receipt, msg)
   rescue StandardError => e
     mark_receipt_failed(receipt, e.message)

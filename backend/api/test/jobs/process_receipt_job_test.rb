@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ProcessReceiptJobTest < ActiveJob::TestCase
-  # Evita corrida entre threads no mesmo fixture `receipts(:one)`.
+  # Avoid parallel threads mutating the same `receipts(:one)` fixture.
   parallelize(workers: 1)
   test "skips when receipt is not queued" do
     receipt = receipts(:one)

@@ -3,7 +3,7 @@
 require "nokogiri"
 require "cgi"
 
-# Interpreta corpo da consulta NFC-e (XML da NF-e ou HTML de portal SEFAZ).
+# Parses NFC-e consultation payloads (NF-e XML or SEFAZ portal HTML).
 class NfceConsultationParser
   class ParseError < StandardError; end
 
@@ -68,10 +68,10 @@ class NfceConsultationParser
     doc.remove_namespaces!
 
     inf = doc.at("infNFe") || doc.at("//infNFe")
-    raise ParseError, "XML sem infNFe" unless inf
+    raise ParseError, "XML has no infNFe node" unless inf
 
     chave = extract_chave_from_inf(inf)
-    raise ParseError, "não foi possível extrair a chave de acesso (44 dígitos)" if chave.blank?
+    raise ParseError, "could not extract 44-digit access key from XML" if chave.blank?
 
     ide = inf.at("ide")
     emit = inf.at("emit")
@@ -175,7 +175,7 @@ class NfceConsultationParser
     chave = self.class.chave_from_source_url(@source_url) if @source_url.present?
     chave ||= @body.scan(/\d{44}/).first
     chave ||= @body.match(/(?:\d{4}\s+){10}\d{4}/)&.[](0)&.gsub(/\D/, "")
-    raise ParseError, "não foi possível extrair a chave de acesso a partir do HTML" if chave.blank?
+    raise ParseError, "could not extract access key from HTML" if chave.blank?
 
     doc = Nokogiri::HTML(@body)
     plain = html_plain(doc)
@@ -205,8 +205,8 @@ class NfceConsultationParser
     doc.text.gsub(/\*{2,}/, "").squeeze(" ").strip
   end
 
-  # Padrão comum nos portais (ex.: SVRS QrCodeNFce): linha com descrição + "(Código: N)" na 1ª coluna
-  # e "Vl. Total X,XX" na 2ª — ver layout em https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce
+  # Common on state portals (e.g. SVRS QrCodeNFce): first column has description + "(Código: N)",
+  # second column has "Vl. Total X,XX" — see https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce
   def extract_items_from_sefaz_qr_portal_rows(doc)
     items = []
     ordem = 0

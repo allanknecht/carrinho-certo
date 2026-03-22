@@ -1,7 +1,7 @@
-# Linha da nota como extraída do XML/HTML (antes de normalizar produto no catálogo).
-# Colunas principais (schema em receipt_items_raw): descricao_bruta, codigo_estabelecimento,
-# quantidade, unidade, valor_unitario, valor_total, ordem. Preços podem vir nil se o portal
-# não expuser valores no HTML; no XML da NF-e costumam vir preenchidos.
+# Receipt line as extracted from XML/HTML (before catalog product normalization).
+# Main columns (see receipt_items_raw): descricao_bruta, codigo_estabelecimento, quantidade,
+# unidade, valor_unitario, valor_total, ordem. Prices may be nil if the portal HTML omits
+# them; NF-e XML usually includes values.
 class ReceiptItemRaw < ApplicationRecord
   self.table_name = "receipt_items_raw"
 
