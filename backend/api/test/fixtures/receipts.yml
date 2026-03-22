@@ -9,3 +9,9 @@ two:
   source_url: https://dfe-portal.example.com/r
   status: queued
   user: one
+
+with_chave:
+  source_url: https://dfe-portal.example.com/existing
+  status: done
+  user: one
+  chave_acesso: "35250814255342000183650060000012341012345678"

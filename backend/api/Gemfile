@@ -11,6 +11,7 @@ gem "puma", ">= 5.0"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
+gem "nokogiri", ">= 1.16"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -36,6 +37,9 @@ gem "thruster", require: false
 # gem "rack-cors"
 
 group :development, :test do
+  # Rails 8.0 test runner expects Minitest 5.x (`run` arity); 6.x breaks line_filtering.
+  gem "minitest", "~> 5.25"
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 

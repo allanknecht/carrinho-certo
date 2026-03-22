@@ -2,6 +2,11 @@ class ReceiptsController < ApplicationController
   before_action :authenticate_user!
 
   def create
+    chave = Receipt.chave_from_source_url(receipt_params[:source_url].to_s)
+    if chave.present? && Receipt.exists?(chave_acesso: chave)
+      return render json: { error: "Nota já cadastrada", chave_acesso: chave }, status: :conflict
+    end
+
     receipt = current_user.receipts.build(receipt_params.merge(status: "queued"))
     if receipt.save
       ProcessReceiptJob.perform_later(receipt.id)

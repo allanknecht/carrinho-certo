@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc>
+  <NFe>
+    <infNFe Id="NFe35250814255342000183650060000099991098765432">
+      <ide>
+        <cUF>35</cUF>
+        <nNF>1234</nNF>
+        <serie>6</serie>
+        <dhEmi>2025-08-25T14:30:00-03:00</dhEmi>
+      </ide>
+      <emit>
+        <CNPJ>14255342000183</CNPJ>
+        <xNome>Loja Teste</xNome>
+        <enderEmit>
+          <xLgr>Rua A</xLgr>
+          <nro>1</nro>
+          <xBairro>Centro</xBairro>
+          <xMun>São Paulo</xMun>
+          <UF>SP</UF>
+        </enderEmit>
+      </emit>
+      <total>
+        <ICMSTot>
+          <vNF>21.00</vNF>
+        </ICMSTot>
+      </total>
+      <det nItem="1">
+        <prod>
+          <cProd>1</cProd>
+          <xProd>Arroz 5kg</xProd>
+          <qCom>2</qCom>
+          <uCom>UN</uCom>
+          <vUnCom>10.50</vUnCom>
+          <vProd>21.00</vProd>
+        </prod>
+      </det>
+    </infNFe>
+  </NFe>
+</nfeProc>

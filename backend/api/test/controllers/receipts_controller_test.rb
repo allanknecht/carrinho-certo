@@ -41,6 +41,23 @@ class ReceiptsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @user.id, Receipt.order(:id).last.user_id
   end
 
+  test "create returns 409 when chave from URL already exists" do
+    chave = receipts(:with_chave).chave_acesso
+    url = "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=#{chave}|2|1|1|"
+    assert_no_difference("Receipt.count") do
+      post receipts_url,
+        params: { source_url: url }.to_json,
+        headers: {
+          "Content-Type" => "application/json",
+          "Authorization" => "Bearer #{@token}"
+        }
+    end
+    assert_response :conflict
+    body = JSON.parse(response.body)
+    assert_equal "Nota já cadastrada", body["error"]
+    assert_equal chave, body["chave_acesso"]
+  end
+
   test "create returns 400 for invalid URL" do
     post receipts_url,
       params: { source_url: "not-a-url" }.to_json,

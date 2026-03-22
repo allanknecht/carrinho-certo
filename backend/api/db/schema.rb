@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_23_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_23_120012) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "receipt_items_raw", force: :cascade do |t|
+    t.bigint "receipt_id", null: false
+    t.text "descricao_bruta", null: false
+    t.string "codigo_estabelecimento"
+    t.decimal "quantidade", precision: 12, scale: 3
+    t.string "unidade", limit: 10
+    t.decimal "valor_unitario", precision: 12, scale: 4
+    t.decimal "valor_total", precision: 12, scale: 2
+    t.integer "ordem", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["receipt_id"], name: "index_receipt_items_raw_on_receipt_id"
+  end
 
   create_table "receipts", force: :cascade do |t|
     t.text "source_url"
@@ -22,7 +36,27 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_100000) do
     t.bigint "user_id", null: false
     t.text "processing_error"
     t.datetime "processed_at"
+    t.bigint "store_id"
+    t.string "chave_acesso", limit: 44
+    t.string "numero"
+    t.string "serie"
+    t.date "data_emissao"
+    t.time "hora_emissao"
+    t.decimal "valor_total", precision: 12, scale: 2
+    t.index ["chave_acesso"], name: "index_receipts_on_chave_acesso_unique_non_null", unique: true, where: "(chave_acesso IS NOT NULL)"
+    t.index ["store_id"], name: "index_receipts_on_store_id"
     t.index ["user_id"], name: "index_receipts_on_user_id"
+  end
+
+  create_table "stores", force: :cascade do |t|
+    t.string "cnpj", null: false
+    t.string "nome", null: false
+    t.text "endereco"
+    t.string "cidade"
+    t.string "uf", limit: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cnpj"], name: "index_stores_on_cnpj", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -33,5 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_100000) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "receipt_items_raw", "receipts"
+  add_foreign_key "receipts", "stores"
   add_foreign_key "receipts", "users"
 end
