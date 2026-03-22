@@ -4,6 +4,7 @@ class ReceiptsController < ApplicationController
   def create
     receipt = current_user.receipts.build(receipt_params.merge(status: "queued"))
     if receipt.save
+      ProcessReceiptJob.perform_later(receipt.id)
       render json: {
         id: receipt.id,
         status: receipt.status,

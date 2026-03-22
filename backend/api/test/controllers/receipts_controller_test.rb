@@ -25,12 +25,14 @@ class ReceiptsControllerTest < ActionDispatch::IntegrationTest
 
   test "create returns 202 with flat JSON and Bearer token" do
     assert_difference("Receipt.count", 1) do
-      post receipts_url,
-        params: { source_url: "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=newnote" }.to_json,
-        headers: {
-          "Content-Type" => "application/json",
-          "Authorization" => "Bearer #{@token}"
-        }
+      assert_enqueued_jobs 1, only: ProcessReceiptJob do
+        post receipts_url,
+          params: { source_url: "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=newnote" }.to_json,
+          headers: {
+            "Content-Type" => "application/json",
+            "Authorization" => "Bearer #{@token}"
+          }
+      end
     end
     assert_response :accepted
     body = JSON.parse(response.body)
