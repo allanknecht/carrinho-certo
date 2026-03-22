@@ -2,11 +2,17 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CarrinhoCerto.Pages.AccountPage"
+             BackgroundColor="#F2F2F2"
              Title="AccountPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="tela de contas"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    
+    <Grid RowDefinitions="Auto, *">
+
+        <ContentView Grid.Row="0"
+                     BackgroundColor="#FEF035"
+                     Padding="0, 15, 0, 15">
+            <Image Source="logohorizontal.png"
+                       HorizontalOptions="Center"
+                       WidthRequest="200"/>
+        </ContentView>
+    </Grid>
 </ContentPage>
