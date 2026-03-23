@@ -27,7 +27,7 @@ namespace CarrinhoCerto
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new TabNav());
+            return new Window(new LoginPage());
         }
     }
 }

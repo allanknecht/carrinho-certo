@@ -27,7 +27,7 @@ public partial class TabNav : TabbedPage
         var paginaConta = new AccountPage()
         {
             Title = "Conta",
-            IconImageSource = "user.svg"
+            IconImageSource = "user.svg",
         };
 
         this.Children.Add(paginaInicio);

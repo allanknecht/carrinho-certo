@@ -2,11 +2,41 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CarrinhoCerto.Pages.HomePage"
+             BackgroundColor="#F2F2F2"
              Title="HomePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="tela de inicio"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <Grid RowDefinitions="Auto, *">
+        <ContentView Grid.Row="0"
+                     BackgroundColor="#FEF035"
+                     Padding="0, 15, 0, 15">
+            <Image Source="logohorizontal.png"
+                       HorizontalOptions="Center"
+                       WidthRequest="200"/>
+        </ContentView>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="25">
+
+                <VerticalStackLayout>
+                    <Label Text="Bem-vindo,"
+                       TextColor="#616161"
+                       FontSize="14"
+                       FontFamily="PoppinsRegular"/>
+
+                    <Label x:Name="lbUser"
+                       Text="Usuário"
+                       TextColor="#616161"
+                       FontSize="22"
+                       FontFamily="PoppinsBold"
+                       Margin="0,-10,0,0"/>
+                </VerticalStackLayout>
+
+
+            </VerticalStackLayout>
+
+
+
+
+        </ScrollView>
+    </Grid>
 </ContentPage>
