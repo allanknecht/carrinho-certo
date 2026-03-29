@@ -29,7 +29,7 @@ Documentos ou seções ainda não elaborados e recomendados para fechamento da b
 | # | Item | Recomendação |
 |---|------|--------------|
 | 1 | **Autenticação** | Parcialmente coberto em [api-contrato.md](api-contrato.md) (inglês): e-mail + senha, `password_digest`, Bearer token. Completar com diagrama de fluxo e, se desejado, OpenAPI. |
-| 2 | **Contrato da API** | Parcialmente coberto em [api-contrato.md](api-contrato.md) (inglês). Pendente: OpenAPI/Swagger e `GET /receipts/:id`. |
+| 2 | **Contrato da API** | Parcialmente coberto em [api-contrato.md](api-contrato.md) (inglês). Pendente: OpenAPI/Swagger. Leitura de notas por usuário não faz parte do contrato (contribuição para base agregada). |
 | 3 | **Diagrama de arquitetura** | Incluir diagrama (ex.: Mermaid): App → API → PostgreSQL; Active Job → parser HTTP → PostgreSQL. |
 | 4 | **Normalização do modelo de dados** | Incluir em `schema-banco.md` subseção que explicite a aderência às formas normais (1FN, 2FN, 3FN), com exemplos. |
 | 5 | **Estratégia de testes** | Documentar abordagem de testes (unitários, integração, e2e) e ferramentas previstas (RSpec, xUnit, etc.). |
@@ -56,6 +56,7 @@ Recomenda-se tratar os itens pendentes conforme a prioridade do projeto e a nece
 - **Auth:** `POST /users`, `POST /auth/login`, `Authorization: Bearer <token>` on protected routes.
 - **Receipts:** `POST /receipts` accepts flat JSON `{ "source_url": "..." }`, returns `202` with `queued`; `409` if access key from URL already exists.
 - **Job:** `ProcessReceiptJob` fetches URL, runs `NfceConsultationParser` (NF-e XML + HTML, including SVRS QrCode layout), persists `stores`, `receipts`, `receipt_items_raw`; statuses `queued` → `processing` → `done` / `failed`.
-- **DB:** `users`, `stores`, `receipts`, `receipt_items_raw` (see [schema-banco.md](schema-banco.md)).
+- **DB:** `users`, `stores`, `receipts`, `receipt_items_raw`, `products_canonical`, `product_aliases` (see [schema-banco.md](schema-banco.md)).
+- **Normalization:** `ProductNormalization::TextNormalizer` + `AssignCanonical` after each parsed line; optional **local LLM** via OpenAI-compatible API (Ollama, env `PRODUCT_NORMALIZATION_LLM_ENABLED`); aliases merge variants (`source`: manual / `llm` / heuristic `new_canonical`).
 
-**Not implemented yet:** `GET /receipts/:id`, product normalization, `prices` / shopping list endpoints per contract skeleton.
+**Not implemented yet:** `prices` table and product price API, shopping list endpoints. **Receipt listing/detail** is intentionally omitted from the API (collective data contribution model).

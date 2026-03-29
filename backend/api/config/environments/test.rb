@@ -53,4 +53,10 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # LLM is opt-in per test (stub); never call Ollama from the suite because Docker .env may enable it.
+  config.after_initialize do
+    cfg = Rails.application.config
+    cfg.product_normalization_llm.enabled = false if cfg.respond_to?(:product_normalization_llm)
+  end
 end

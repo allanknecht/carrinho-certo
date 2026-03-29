@@ -13,20 +13,23 @@
 ```
 users
   └── receipts (submitted notes; optional shopping_lists later)
-        └── receipt_items_raw (raw lines before catalog normalization)
+        └── receipt_items_raw (raw lines + link to canonical product)
 
 stores (per CNPJ)
   └── receipts
 
-products_canonical (planned)
-  └── product_aliases, prices, price_alerts, price_outliers …
+products_canonical (rule-based normalization now; LLM later)
+  └── product_aliases (raw-normalized label → canonical)
+  └── receipt_items_raw (optional FK)
+
+prices (planned)
 ```
 
 ---
 
 ## Implemented in Rails API (current)
 
-The following match `backend/api/db/schema.rb` (migration version `20260323120012`).
+The following match `backend/api/db/schema.rb` (migration version `20260329140000`).
 
 ### `users`
 
@@ -61,8 +64,8 @@ The following match `backend/api/db/schema.rb` (migration version `2026032312001
 | status           | string     | `queued`, `processing`, `done`, `failed` |
 | processing_error | text       | set when `failed` |
 | processed_at     | datetime   | when processing finished (success or failure) |
-| chave_acesso     | string(44) | unique **partial** index where `chave_acesso IS NOT NULL` |
-| numero           | string     | note number |
+| chave_acesso     | string(44) | unique **partial** index where `chave_acesso IS NOT NULL`; often set from QR URL on `POST`, always reconciled from parsed NF-e when `done` |
+| numero           | string     | note number (`nNF`), filled when parsing completes |
 | serie            | string     | series |
 | data_emissao     | date       |       |
 | hora_emissao     | time       |       |
@@ -84,7 +87,27 @@ The following match `backend/api/db/schema.rb` (migration version `2026032312001
 | valor_unitario         | decimal(12,4)| optional (often filled from XML or SVRS-style HTML) |
 | valor_total            | decimal(12,2)| optional |
 | ordem                  | integer       | line order, default 0 |
+| product_canonical_id   | bigint FK     | optional → `products_canonical` (filled after insert by `ProductNormalization::AssignCanonical`) |
+| normalization_source   | string        | `alias`, `canonical_key`, `llm` (new or exact key match), `llm_merge` (second LLM pass linked line to existing catalog row), or `new_canonical` (heuristic) |
 | created_at, updated_at | datetime      |       |
+
+### `products_canonical`
+
+| Column         | Type   | Notes |
+|----------------|--------|--------|
+| id             | bigint PK | |
+| display_name   | string | human-facing label (defaults from raw line text) |
+| normalized_key | string | unique, folded text for matching (see `ProductNormalization::TextNormalizer`) |
+| created_at, updated_at | datetime | |
+
+### `product_aliases`
+
+| Column              | Type   | Notes |
+|---------------------|--------|--------|
+| id                  | bigint PK | |
+| product_canonical_id| bigint FK | required → `products_canonical` |
+| alias_normalized    | string | unique; same normalization as raw lines |
+| source              | string | default `manual`; `llm` / `llm_merge` when created by normalization (merge = linked typo/variant to existing canonical) |
 
 ---
 
@@ -92,21 +115,13 @@ The following match `backend/api/db/schema.rb` (migration version `2026032312001
 
 1. Client `POST /receipts` with `source_url`.
 2. Optional `409` if access key from URL already exists.
-3. `ProcessReceiptJob` runs: HTTP GET → `NfceConsultationParser` (XML or HTML, including SVRS QrCode layout) → upsert `Store` by CNPJ → replace `receipt_items_raw` → update `receipts` to `done` or `failed`.
+3. `ProcessReceiptJob` runs: HTTP GET → `NfceConsultationParser` (XML or HTML, including SVRS QrCode layout) → upsert `Store` by CNPJ → replace `receipt_items_raw` → for each line `ProductNormalization::AssignCanonical` (alias → existing canonical by key → or new canonical) → update `receipts` to `done` or `failed`.
 
 ---
 
 ## Planned tables (not migrated yet)
 
-The following describe the **target** model for price comparison, lists, and alerts. They are documented for design alignment; only the tables above exist in the repo today.
-
-### `products_canonical`
-
-Normalized catalog (normalization rules / LLM later).
-
-### `product_aliases`
-
-Raw description → canonical product mapping.
+The following describe **additional** targets for price comparison, lists, and alerts.
 
 ### `prices`
 
@@ -151,7 +166,7 @@ Do **not** remove `chave_acesso` from receipts: required for deduplication and i
 |---------------------|----------------------------------------|
 | Submit receipt URL  | `receipts`, job, parser                |
 | Store / note header | `stores`, `receipts`                   |
-| Raw lines           | `receipt_items_raw`                    |
-| Product & price UI  | `products_canonical`, `prices` (planned) |
+| Raw lines + canonical | `receipt_items_raw`, `products_canonical`, `product_aliases` |
+| Product & price UI  | `prices` (planned)                     |
 | Shopping lists      | `shopping_lists` (planned)             |
 | Where to buy        | derived from `prices` (planned)        |

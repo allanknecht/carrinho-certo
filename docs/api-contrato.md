@@ -83,6 +83,11 @@ Requires `Authorization: Bearer <token>`.
 }
 ```
 
+**Access key & note number**
+
+- If `source_url` yields a **44-digit access key** (`chave de acesso`), it is stored on the `receipts` row **as soon as the request is accepted** (`queued`). A **unique partial index** on `chave_acesso` blocks a second insert for the same key (including concurrent requests).
+- **`numero`**, **`serie`**, and other header fields from the NF-e are read from the fetched document and saved when the job finishes (`done`).
+
 **Response `202`**
 
 ```json
@@ -115,15 +120,13 @@ Requires `Authorization: Bearer <token>`.
 | `done`      | Parsed and persisted successfully            |
 | `failed`    | Error; see `processing_error` (if present)   |
 
-Additional columns when done (see [schema-banco.md](schema-banco.md)): `chave_acesso`, `store_id`, line items in `receipt_items_raw`, etc.
+Additional data when `done` (see [schema-banco.md](schema-banco.md)): `numero`, `serie`, dates, `valor_total`, `store_id`, line items in `receipt_items_raw`, etc. `chave_acesso` may already have been set at enqueue if it was parsed from the URL.
 
-### 2.3. Get receipt (not implemented yet)
+### 2.3. No receipt read API (by design)
 
-Planned for the mobile client (polling):
+The API does **not** expose `GET /receipts` or `GET /receipts/:id`. Users contribute NFC-e URLs to populate a **shared** dataset; the product experience is oriented toward **aggregate prices and suggestions** (e.g. planned `GET /products/...`), not browsing one’s own submitted receipts.
 
-- `GET /receipts/:id` — receipt header + `receipt_item_raws` + store, scoped to the current user.
-
-Until this exists, the app can only rely on `POST` response and future polling endpoint.
+The `202` response may still include `id` and `status` for acknowledgment only; clients should not rely on fetching that receipt later via the public API.
 
 ---
 
@@ -164,3 +167,4 @@ Not implemented in the API yet; contract kept for roadmap.
 - **Duplicate access keys:** unique partial index on `receipts.chave_acesso` where not null; `409` when the key can be derived from `source_url` before insert; job also checks before save and handles `RecordNotUnique`.
 - **Parser:** NF-e XML first; HTML fallback including SVRS `QrCodeNFce` table layout (two columns, `Código` / `Vl. Unit.` / `Vl. Total` in cell text).
 - **Dev jobs:** `config.active_job.queue_adapter = :async` (in-process). **Tests:** `:test` adapter. Production should use a persistent backend (e.g. Solid Queue) when deploying.
+- **Receipt visibility:** uploads are attributed to `user_id` for LGPD / moderation, but the HTTP API does not return per-user receipt lists or detail; value is in aggregated price data once normalization exists.

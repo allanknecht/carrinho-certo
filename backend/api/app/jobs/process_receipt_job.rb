@@ -20,6 +20,10 @@ class ProcessReceiptJob < ApplicationJob
     body = fetch_receipt_page(receipt)
     parsed = NfceConsultationParser.call(body, source_url: receipt.source_url)
 
+    if receipt.chave_acesso.present? && parsed.chave_acesso.present? && receipt.chave_acesso != parsed.chave_acesso
+      raise "Access key mismatch between consultation URL and document content."
+    end
+
     if parsed.chave_acesso.present? &&
         Receipt.where(chave_acesso: parsed.chave_acesso).where.not(id: receipt.id).exists?
       raise "Receipt already registered (duplicate access key)."
@@ -54,6 +58,8 @@ class ProcessReceiptJob < ApplicationJob
         )
       end
     end
+
+    NormalizeReceiptItemsJob.perform_later(receipt.id)
   rescue NfceConsultationParser::ParseError => e
     mark_receipt_failed(receipt, e.message)
   rescue ActiveRecord::RecordNotUnique => e

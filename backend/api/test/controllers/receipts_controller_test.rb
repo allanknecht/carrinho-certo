@@ -41,6 +41,21 @@ class ReceiptsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @user.id, Receipt.order(:id).last.user_id
   end
 
+  test "create persists chave_acesso when URL carries the access key" do
+    chave = "43260352932793000180650040000458781305092704"
+    url = "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=#{chave}|2|1|1|HASH"
+    assert_difference("Receipt.count", 1) do
+      post receipts_url,
+        params: { source_url: url }.to_json,
+        headers: {
+          "Content-Type" => "application/json",
+          "Authorization" => "Bearer #{@token}"
+        }
+    end
+    assert_response :accepted
+    assert_equal chave, Receipt.order(:id).last.chave_acesso
+  end
+
   test "create returns 409 when chave from URL already exists" do
     chave = receipts(:with_chave).chave_acesso
     url = "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=#{chave}|2|1|1|"

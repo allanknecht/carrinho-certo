@@ -23,6 +23,11 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@db:5432/api_development
+      # LLM (Ollama no Windows/Mac): o container acessa o host via host.docker.internal — não use localhost aqui.
+      PRODUCT_NORMALIZATION_LLM_ENABLED: ${PRODUCT_NORMALIZATION_LLM_ENABLED:-false}
+      OLLAMA_OPENAI_BASE_URL: ${OLLAMA_OPENAI_BASE_URL:-http://host.docker.internal:11434/v1}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      OLLAMA_READ_TIMEOUT: ${OLLAMA_READ_TIMEOUT:-120}
     ports:
       - "3000:3000"
     volumes:
