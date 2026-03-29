@@ -10,9 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_23_120012) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_29_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "product_aliases", force: :cascade do |t|
+    t.bigint "product_canonical_id", null: false
+    t.string "alias_normalized", null: false
+    t.string "source", default: "manual", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["alias_normalized"], name: "index_product_aliases_on_alias_normalized", unique: true
+    t.index ["product_canonical_id"], name: "index_product_aliases_on_product_canonical_id"
+  end
+
+  create_table "products_canonical", force: :cascade do |t|
+    t.string "display_name", null: false
+    t.string "normalized_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["normalized_key"], name: "index_products_canonical_on_normalized_key", unique: true
+  end
 
   create_table "receipt_items_raw", force: :cascade do |t|
     t.bigint "receipt_id", null: false
@@ -25,6 +43,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_120012) do
     t.integer "ordem", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "product_canonical_id"
+    t.string "normalization_source"
+    t.index ["product_canonical_id"], name: "index_receipt_items_raw_on_product_canonical_id"
     t.index ["receipt_id"], name: "index_receipt_items_raw_on_receipt_id"
   end
 
@@ -67,6 +88,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_120012) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "product_aliases", "products_canonical", column: "product_canonical_id"
+  add_foreign_key "receipt_items_raw", "products_canonical", column: "product_canonical_id"
   add_foreign_key "receipt_items_raw", "receipts"
   add_foreign_key "receipts", "stores"
   add_foreign_key "receipts", "users"

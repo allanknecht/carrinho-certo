@@ -19,7 +19,10 @@ class ProcessReceiptJobTest < ActiveJob::TestCase
 
     job = ProcessReceiptJob.new
     job.define_singleton_method(:fetch_receipt_page) { |_| xml }
-    job.perform(receipt.id)
+    assert_enqueued_with(job: NormalizeReceiptItemsJob, args: [receipt.id]) do
+      job.perform(receipt.id)
+    end
+    perform_enqueued_jobs(only: NormalizeReceiptItemsJob)
 
     receipt.reload
     assert_equal "done", receipt.status
@@ -27,7 +30,11 @@ class ProcessReceiptJobTest < ActiveJob::TestCase
     assert receipt.store_id.present?
     assert_equal "14255342000183", receipt.store.cnpj
     assert_equal 1, receipt.receipt_item_raws.count
-    assert_equal "Arroz 5kg", receipt.receipt_item_raws.first.descricao_bruta
+    line = receipt.receipt_item_raws.first
+    assert_equal "Arroz 5kg", line.descricao_bruta
+    assert line.product_canonical_id.present?
+    assert_equal "ARROZ 5KG", line.product_canonical.normalized_key
+    assert_equal "new_canonical", line.normalization_source
   end
 
   test "marks failed when fetch raises" do

@@ -46,8 +46,22 @@ class NfceConsultationParser
   end
 
   def initialize(body, source_url: nil)
-    @body = body.to_s
+    @body = self.class.scrub_http_body_to_utf8(body)
     @source_url = source_url
+  end
+
+  # Net::HTTP often returns ASCII-8BIT; literals and /\u/ regexes are UTF-8 — normalize first.
+  def self.scrub_http_body_to_utf8(body)
+    s = body.to_s
+    return s if s.encoding == Encoding::UTF_8 && s.valid_encoding?
+
+    bytes = s.encoding == Encoding::ASCII_8BIT ? s : s.b
+    as_utf8 = bytes.dup.force_encoding(Encoding::UTF_8)
+    return as_utf8 if as_utf8.valid_encoding?
+
+    bytes.encode(Encoding::UTF_8, Encoding::Windows_1252, invalid: :replace, undef: :replace)
+  rescue Encoding::ConverterNotFoundError, Encoding::UndefinedConversionError
+    bytes.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "")
   end
 
   def call
