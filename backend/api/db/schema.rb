@@ -10,9 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_29_140000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_29_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "observed_prices", force: :cascade do |t|
+    t.bigint "product_canonical_id", null: false
+    t.bigint "store_id"
+    t.bigint "receipt_item_raw_id", null: false
+    t.date "observed_on", null: false
+    t.decimal "quantidade", precision: 12, scale: 3
+    t.decimal "valor_unitario", precision: 12, scale: 4
+    t.decimal "valor_total", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "unidade", limit: 10
+    t.index ["product_canonical_id", "observed_on"], name: "index_observed_prices_on_product_canonical_and_observed_on"
+    t.index ["product_canonical_id"], name: "index_observed_prices_on_product_canonical_id"
+    t.index ["receipt_item_raw_id"], name: "index_observed_prices_on_receipt_item_raw_id", unique: true
+    t.index ["store_id"], name: "index_observed_prices_on_store_id"
+  end
 
   create_table "product_aliases", force: :cascade do |t|
     t.bigint "product_canonical_id", null: false
@@ -88,6 +105,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_29_140000) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "observed_prices", "products_canonical", column: "product_canonical_id"
+  add_foreign_key "observed_prices", "receipt_items_raw", column: "receipt_item_raw_id"
+  add_foreign_key "observed_prices", "stores"
   add_foreign_key "product_aliases", "products_canonical", column: "product_canonical_id"
   add_foreign_key "receipt_items_raw", "products_canonical", column: "product_canonical_id"
   add_foreign_key "receipt_items_raw", "receipts"

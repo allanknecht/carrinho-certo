@@ -7,6 +7,7 @@ class ReceiptItemRaw < ApplicationRecord
 
   belongs_to :receipt
   belongs_to :product_canonical, optional: true, inverse_of: :receipt_item_raws
+  has_one :observed_price, dependent: :destroy, inverse_of: :receipt_item_raw
 
   validates :descricao_bruta, presence: true
   validates :ordem, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

@@ -11,7 +11,7 @@ module ProductNormalization
       You normalize Brazilian NFC-e / supermarket / café receipt line items for price comparison across stores.
       Reply with ONLY a JSON object (no markdown, no code fences) with exactly two string keys:
       "normalized_key" — UPPERCASE ASCII letters, digits, and SINGLE spaces between words (max 80 chars). Use one space between every word; never concatenate separate words (e.g. write "COCA COLA" not "COCACOLA"). Strip accents via ASCII equivalents (CAFE not CAFÉ). Include volume/size when printed on the line (e.g. 350ML, 2L). Treat common POS abbreviations in context: in beverages "GLD" or "GEL" usually means GELADO (iced), "LT" means LATA (can), "PET" plastic bottle, "UN" is unit not part of the name.
-      "display_name" — short natural Brazilian Portuguese for the shopper UI (accents allowed), max 120 chars.
+      "display_name" — **very short** Brazilian Portuguese for the shopper UI (accents allowed), max 120 chars but **prefer under ~45 characters**. Pattern: **brand + packaging + size** when applicable (e.g. "Sprite Lata 350ml", "Coca-Cola Pet 2L"). Do **not** repeat long POS marketing text or redundant flavor lines: if the receipt says "SABOR LIMAO" but it is the usual single-SKU can, **omit** the flavor and use only brand + Lata + 350ml. Avoid filler ("de", "tipo", "lata de") unless needed to disambiguate two different products. For weighed buffet / KG lines, a compact label is enough (e.g. "Buffet sorvete e açaí (kg)").
       Same physical product must always get the same normalized_key even if the POS description changes.
     PROMPT
 
@@ -33,13 +33,13 @@ module ProductNormalization
         model: cfg.model,
         api_key: cfg.api_key,
         open_timeout: cfg.open_timeout,
-        read_timeout: cfg.read_timeout
+        read_timeout: cfg.read_timeout,
       )
 
       raw = http.chat_completion(
         [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: "Descrição na nota: #{@descricao}" }
+          { role: "user", content: "Descrição na nota: #{@descricao}" },
         ]
       )
 

@@ -10,8 +10,17 @@ class NormalizeReceiptItemsJob < ApplicationJob
     receipt = Receipt.find(receipt_id)
     return unless receipt.status == "done"
 
-    receipt.receipt_item_raws.where(product_canonical_id: nil).find_each do |row|
-      ProductNormalization::AssignCanonical.call(row)
+    n = receipt.receipt_item_raws.count
+    Rails.logger.info("[NormalizeReceiptItemsJob] receipt_id=#{receipt_id} normalizing #{n} line(s)…")
+
+    receipt.receipt_item_raws.find_each do |row|
+      if row.product_canonical_id.nil?
+        ProductNormalization::AssignCanonical.call(row)
+        row.reload
+      end
+      Pricing::RecordObservedPrice.call(row) if row.product_canonical_id.present?
     end
+
+    Rails.logger.info("[NormalizeReceiptItemsJob] receipt_id=#{receipt_id} done.")
   end
 end

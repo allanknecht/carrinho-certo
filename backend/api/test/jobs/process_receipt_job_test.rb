@@ -35,6 +35,31 @@ class ProcessReceiptJobTest < ActiveJob::TestCase
     assert line.product_canonical_id.present?
     assert_equal "ARROZ 5KG", line.product_canonical.normalized_key
     assert_equal "new_canonical", line.normalization_source
+    assert_equal 1, ObservedPrice.count
+    op = ObservedPrice.find_by!(receipt_item_raw_id: line.id)
+    assert_equal line.product_canonical_id, op.product_canonical_id
+    assert_equal receipt.store_id, op.store_id
+  end
+
+  test "re-queued receipt clears observed_prices before delete_all on raw lines" do
+    receipt = receipts(:one)
+    receipt.update!(status: "queued", source_url: "https://example.com/nfe")
+    xml = file_fixture("nfce_sample.xml").read
+    job = ProcessReceiptJob.new
+    job.define_singleton_method(:fetch_receipt_page) { |_| xml }
+
+    job.perform(receipt.id)
+    perform_enqueued_jobs(only: NormalizeReceiptItemsJob)
+    assert_equal "done", receipt.reload.status
+    assert_equal 1, ObservedPrice.count
+
+    receipt.update_columns(status: "queued", processing_error: nil, updated_at: Time.current)
+    job.perform(receipt.id)
+    perform_enqueued_jobs(only: NormalizeReceiptItemsJob)
+
+    assert_equal "done", receipt.reload.status
+    assert_equal 1, receipt.receipt_item_raws.count
+    assert_equal 1, ObservedPrice.count
   end
 
   test "marks failed when fetch raises" do

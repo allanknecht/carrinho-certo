@@ -17,19 +17,19 @@ users
 
 stores (per CNPJ)
   └── receipts
+  └── observed_prices (optional FK)
 
 products_canonical (rule-based normalization now; LLM later)
   └── product_aliases (raw-normalized label → canonical)
   └── receipt_items_raw (optional FK)
-
-prices (planned)
+  └── observed_prices (one row per normalized line with prices)
 ```
 
 ---
 
 ## Implemented in Rails API (current)
 
-The following match `backend/api/db/schema.rb` (migration version `20260329140000`).
+The following match `backend/api/db/schema.rb` (includes `observed_prices`, migration `20260329180000`).
 
 ### `users`
 
@@ -87,9 +87,27 @@ The following match `backend/api/db/schema.rb` (migration version `2026032914000
 | valor_unitario         | decimal(12,4)| optional (often filled from XML or SVRS-style HTML) |
 | valor_total            | decimal(12,2)| optional |
 | ordem                  | integer       | line order, default 0 |
-| product_canonical_id   | bigint FK     | optional → `products_canonical` (filled after insert by `ProductNormalization::AssignCanonical`) |
+| product_canonical_id   | bigint FK     | optional → `products_canonical` (filled by `NormalizeReceiptItemsJob` via `ProductNormalization::AssignCanonical`) |
 | normalization_source   | string        | `alias`, `canonical_key`, `llm` (new or exact key match), `llm_merge` (second LLM pass linked line to existing catalog row), or `new_canonical` (heuristic) |
 | created_at, updated_at | datetime      |       |
+
+### `observed_prices`
+
+One row per receipt line once it has a canonical product: values copied for aggregation (`GET /products/.../prices` later). **Unique** on `receipt_item_raw_id` so retries are idempotent. Not exposed as “user’s receipts”; internal link only.
+
+| Column               | Type          | Notes |
+|----------------------|---------------|--------|
+| id                   | bigint PK     |       |
+| product_canonical_id | bigint FK     | required → `products_canonical` |
+| store_id             | bigint FK     | optional → `stores` (from receipt; null if CNPJ unknown) |
+| receipt_item_raw_id  | bigint FK     | required → `receipt_items_raw`, **unique** |
+| observed_on          | date          | `receipts.data_emissao`, else `processed_at` date, else today |
+| quantidade           | decimal(12,3) | optional |
+| valor_unitario       | decimal(12,4) | optional |
+| valor_total          | decimal(12,2) | optional |
+| created_at, updated_at | datetime      |       |
+
+Written by `Pricing::RecordObservedPrice` at the end of `NormalizeReceiptItemsJob` (after normalization). If the job fails after assigning a canonical but before recording, a retry still records because the job walks all lines and skips only missing canonicals.
 
 ### `products_canonical`
 
@@ -115,19 +133,16 @@ The following match `backend/api/db/schema.rb` (migration version `2026032914000
 
 1. Client `POST /receipts` with `source_url`.
 2. Optional `409` if access key from URL already exists.
-3. `ProcessReceiptJob` runs: HTTP GET → `NfceConsultationParser` (XML or HTML, including SVRS QrCode layout) → upsert `Store` by CNPJ → replace `receipt_items_raw` → for each line `ProductNormalization::AssignCanonical` (alias → existing canonical by key → or new canonical) → update `receipts` to `done` or `failed`.
+3. `ProcessReceiptJob` runs: HTTP GET → `NfceConsultationParser` (XML or HTML, including SVRS QrCode layout) → upsert `Store` by CNPJ → replace `receipt_items_raw` → update `receipts` to `done` or `failed` → enqueue `NormalizeReceiptItemsJob`.
+4. `NormalizeReceiptItemsJob`: for each line, `AssignCanonical` if needed, then `Pricing::RecordObservedPrice` when `product_canonical_id` is set.
 
 ---
 
 ## Planned tables (not migrated yet)
 
-The following describe **additional** targets for price comparison, lists, and alerts.
+The following describe **additional** targets for lists, alerts, and richer analytics (beyond `observed_prices`).
 
-### `prices`
-
-One row per price observation (product + store + date + link to receipt line).
-
-**Relevant price rule (MVP idea):** among values with **≥ 2 receipts** in the window, prefer the most recent; if none, use the latest single observation and label “based on 1 receipt”. See original product spec for mode, outliers, and UI copy.
+**Relevant price rule (MVP idea):** among `observed_prices` rows with **≥ 2 receipts** in the window, prefer the most recent; if none, use the latest single observation and label “based on 1 receipt”. See original product spec for mode, outliers, and UI copy.
 
 ### `shopping_lists`, `shopping_list_items`
 
@@ -167,6 +182,7 @@ Do **not** remove `chave_acesso` from receipts: required for deduplication and i
 | Submit receipt URL  | `receipts`, job, parser                |
 | Store / note header | `stores`, `receipts`                   |
 | Raw lines + canonical | `receipt_items_raw`, `products_canonical`, `product_aliases` |
-| Product & price UI  | `prices` (planned)                     |
+| Observed prices       | `observed_prices`                      |
+| Product & price UI  | aggregate from `observed_prices` (HTTP API planned) |
 | Shopping lists      | `shopping_lists` (planned)             |
 | Where to buy        | derived from `prices` (planned)        |

@@ -34,6 +34,7 @@ class NfceConsultationParserTest < ActiveSupport::TestCase
     assert_equal Date.new(2026, 3, 7), result.data_emissao
     assert_equal "21:18:01", result.hora_emissao
     assert_equal BigDecimal("36.80"), result.valor_total
+    assert_equal "CAFÉ EXEMPLO COMERCIO LTDA ME", result.store_nome
     assert_equal 2, result.items.size
 
     first = result.items.first
@@ -49,5 +50,11 @@ class NfceConsultationParserTest < ActiveSupport::TestCase
     url = "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=35250814255342000183650060000012341012345678%7C2%7C1"
     assert_equal "35250814255342000183650060000012341012345678",
       NfceConsultationParser.chave_from_source_url(url)
+  end
+
+  test "clean_store_nome strips SVRS heading glued to trade name" do
+    parser = NfceConsultationParser.allocate
+    raw = "DA NOTA FISCAL DE CONSUMIDOR ELETRÔNICAMIX COMERCIO DE SOVETES LTDA ME"
+    assert_equal "MIX COMERCIO DE SOVETES LTDA ME", parser.send(:clean_store_nome_fragment, raw)
   end
 end

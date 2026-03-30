@@ -5,6 +5,7 @@ class ProductCanonical < ApplicationRecord
 
   has_many :product_aliases, dependent: :destroy, inverse_of: :product_canonical
   has_many :receipt_item_raws, dependent: :nullify, inverse_of: :product_canonical
+  has_many :observed_prices, dependent: :destroy, inverse_of: :product_canonical
 
   validates :display_name, presence: true
   validates :normalized_key, presence: true, uniqueness: true

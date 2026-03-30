@@ -207,7 +207,7 @@ class NfceConsultationParser
       hora_emissao: meta[:hora_emissao],
       valor_total: meta[:valor_total],
       store_cnpj: extract_cnpj_from_html(doc),
-      store_nome: nil,
+      store_nome: extract_store_nome_from_html(doc),
       store_endereco: nil,
       store_cidade: nil,
       store_uf: nil,
@@ -236,8 +236,7 @@ class NfceConsultationParser
       desc = left.split(/\(\s*Código:/i).first&.strip
       cod = left[/\(Código:\s*(\d+)\s*\)/i, 1]
       q = left[/Qtde\.:\s*([\d.,]+)/i, 1]
-      un = left[/UN:\s*([A-Za-z0-9.\-]+?)(?=\s*Vl\.?\s*Unit\.)/i, 1]
-      vu = left[/Vl\.?\s*Unit\.:\s*([\d.,]+)/i, 1]
+      un, vu = parse_svrs_left_cell_un_and_unit_price(left)
       vt = right[/Vl\.?\s*Total\s*([\d.,]+)/i, 1]
 
       items << Item.new(
@@ -259,6 +258,18 @@ class NfceConsultationParser
     str.to_s.gsub(/\*{2,}/, "").gsub(/\s+/, " ").strip
   end
 
+  # SVRS often emits "**UN:** KG**Vl. Unit.:**" so "KG" and "Vl." are adjacent (no space).
+  # Unit price may be separated from ":" with NBSP (U+00A0), so use [[:space:]] not just \s.
+  def parse_svrs_left_cell_un_and_unit_price(left)
+    if (m = left.match(/UN:\s*(.+?)Vl\.?\s*Unit\.:[[:space:]]*([\d.,]+)/im))
+      return [ m[1].strip, m[2].strip ]
+    end
+
+    un = left[/UN:\s*([A-Za-z0-9.\-]+?)(?=\s+Vl\.?\s*Unit\.)/i, 1]
+    vu = left[/Vl\.?\s*Unit\.:[[:space:]]*([\d.,]+)/i, 1]
+    [ un, vu ]
+  end
+
   def parse_html_nota_metadata(plain)
     h = {}
     if (m = plain.match(/Número:\s*(\d+)\s*Série:\s*(\d+)\s*Emissão:\s*(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2}:\d{2})/m))
@@ -277,8 +288,38 @@ class NfceConsultationParser
 
   def extract_cnpj_from_html(doc)
     text = doc.text
+    m = text.match(/CNPJ[:\s]*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/i)
+    return m[1].gsub(/\D/, "") if m
+
     m = text.match(%r{\b(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})\b})
-    m ? m[1].gsub(/\D/, "") : text.scan(/\d{14}/).find { |s| s.length == 14 }
+    return m[1].gsub(/\D/, "") if m
+
+    text.scan(/\d{14}/).find { |s| s.length == 14 }
+  end
+
+  # SVRS QrCodeNFce: trade name appears immediately before "CNPJ: xx.xxx.xxx/xxxx-xx".
+  def extract_store_nome_from_html(doc)
+    text = doc.text.gsub(/\*{2,}/, "").squeeze(" ").strip
+    m = text.match(
+      /\b([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .,'&\-]{2,180}?)\s+CNPJ\s*[:\s]*\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/im
+    )
+    return clean_store_nome_fragment(m[1]) if m
+
+    nil
+  end
+
+  def clean_store_nome_fragment(raw)
+    s = raw.to_s.strip.gsub(/\s+/, " ")
+    s = s.sub(
+      /\A(DOCUMENTO\s+AUXILIAR|NFC-?e|NOTA\s+FISCAL|CONSUMIDOR|DE\s+CONSUMIDOR|ELETR[OÔ]NICA)\s+/i,
+      ""
+    ).strip
+    # SVRS: "… CONSUMIDOR ELETRÔNICAMIX COMERCIO …" (no space before trade name)
+    s = s.sub(
+      /\A(?:.*?\s+)?(?:DA\s+)?NOTA\s+FISCAL\s+DE\s+CONSUMIDOR\s+ELETR[OÔ]NIC[AO]?\s*/i,
+      ""
+    ).strip
+    s.presence
   end
 
   def extract_items_from_html_tables(doc)

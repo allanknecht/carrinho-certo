@@ -130,11 +130,98 @@ The `202` response may still include `id` and `status` for acknowledgment only; 
 
 ---
 
-## 3. Product prices (not implemented yet)
+## 3. Product prices
 
-`GET /products/:id/prices?period=30`
+`GET /products/:id/prices`
 
-Requires authentication. Response shape remains as originally sketched (product + stores + `relevant_price`, etc.). Depends on normalized `products` / `prices` tables.
+Requires `Authorization: Bearer <token>`.
+
+- **`:id`** — `products_canonical.id` (same catalog the app uses after normalization).
+
+Only observations with `observed_on` in the **last 30 calendar days** (inclusive, ending today) are considered. Per store, prices are disclosed only when there are **at least two distinct NFC-e** (receipts) for that product **within that window**.
+
+Observations come from `observed_prices` (no receipt or line ids in the response).
+
+**Response `200`**
+
+```json
+{
+  "product": {
+    "id": 2,
+    "display_name": "Sprite Lata 350 ml",
+    "normalized_key": "SPRITE LATA 350 ML"
+  },
+  "period_days": 30,
+  "window": { "from": "2026-02-27", "to": "2026-03-29" },
+  "observations_count": 4,
+  "receipts_distinct_count": 3,
+  "prices_disclosed": true,
+  "relevant_price": {
+    "unit_price": "7.00",
+    "unidade": "UN",
+    "quantidade": "1",
+    "line_total": "7.00",
+    "receipt_total": "31.78",
+    "observed_on": "2026-03-29",
+    "store_id": 1,
+    "basis": "latest_among_verified_stores"
+  },
+  "stores": [
+    {
+      "store_id": 1,
+      "nome": "MIX COMERCIO DE SOVETES LTDA ME",
+      "cnpj": "26266835000181",
+      "observations_count": 3,
+      "receipts_distinct_at_store": 3,
+      "prices_disclosed": true,
+      "last_observed_on": "2026-03-29",
+      "recent_prices": [
+        {
+          "unit_price": "7.00",
+          "unidade": "UN",
+          "quantidade": "1",
+          "line_total": "7.00",
+          "receipt_total": "31.78",
+          "observed_on": "2026-03-29"
+        },
+        {
+          "unit_price": "65.90",
+          "unidade": "KG",
+          "quantidade": "0.376",
+          "line_total": "24.78",
+          "receipt_total": "31.78",
+          "observed_on": "2026-03-28"
+        },
+        {
+          "unit_price": "6.50",
+          "unidade": "UN",
+          "quantidade": "1",
+          "line_total": "6.50",
+          "receipt_total": "30.00",
+          "observed_on": "2026-03-27"
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **`period_days`**: always **30** (fixed rolling window).
+- **`receipts_distinct_count`**: distinct NFC-e receipts for this product in that window (**all stores**). A store can still hide prices until it has its own minimum (below).
+- **`prices_disclosed`**: `true` if **at least one store** has **`receipts_distinct_at_store` ≥ 2** for this product **within the window** (prices are then shown for those stores only).
+- **`relevant_price`**: latest observation among **only stores that meet the per-store minimum** (≥ 2 distinct receipts for this product at that store **in the window**). `null` if no store qualifies. **`basis`** is `latest_among_verified_stores`.
+- **`stores`**: one row per `store_id` seen in the window.
+  - **`receipts_distinct_at_store`**: how many different receipts at that store include this product **in the window**.
+  - **`prices_disclosed`**: `true` only when **`receipts_distinct_at_store` ≥ 2**; then **`recent_prices`** has up to **3** entries (most recent first, then two older). If `false`, **`recent_prices`** is `[]` (no unit/total leaked for a lone receipt at that store).
+  - **`observations_count`** / **`last_observed_on`**: all observations at that store, even when prices are hidden.
+
+**Response `404`** — unknown product id:
+
+```json
+{ "error": "Product not found" }
+```
+
+**Response `401`** — missing or invalid Bearer token.
 
 ---
 

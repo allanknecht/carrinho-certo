@@ -17,7 +17,9 @@ class ProcessReceiptJob < ApplicationJob
     end
 
     receipt.reload
+    Rails.logger.info("[ProcessReceiptJob] receipt_id=#{receipt_id} fetching consultation URL…")
     body = fetch_receipt_page(receipt)
+    Rails.logger.info("[ProcessReceiptJob] receipt_id=#{receipt_id} fetched #{body.bytesize} bytes, parsing…")
     parsed = NfceConsultationParser.call(body, source_url: receipt.source_url)
 
     if receipt.chave_acesso.present? && parsed.chave_acesso.present? && receipt.chave_acesso != parsed.chave_acesso
@@ -32,6 +34,8 @@ class ProcessReceiptJob < ApplicationJob
     store = resolve_store(parsed)
 
     ApplicationRecord.transaction do
+      # delete_all skips callbacks; observed_prices FK would block without clearing first
+      ObservedPrice.joins(:receipt_item_raw).where(receipt_items_raw: { receipt_id: receipt.id }).delete_all
       receipt.receipt_item_raws.delete_all
       receipt.update!(
         store_id: store&.id,
@@ -89,7 +93,7 @@ class ProcessReceiptJob < ApplicationJob
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = uri.scheme == "https"
     http.open_timeout = 10
-    http.read_timeout = 20
+    http.read_timeout = 45
 
     path = uri.request_uri
     path = "/" if path.blank?
@@ -110,12 +114,19 @@ class ProcessReceiptJob < ApplicationJob
     cnpj = parsed.store_cnpj.to_s.gsub(/\D/, "")
     return nil if cnpj.length != 14
 
-    Store.find_or_create_by!(cnpj:) do |store|
-      store.nome = parsed.store_nome.presence || "Estabelecimento"
-      store.endereco = parsed.store_endereco
-      store.cidade = parsed.store_cidade
-      store.uf = parsed.store_uf.to_s.upcase[0, 2].presence
+    store = Store.find_or_create_by!(cnpj:) do |s|
+      s.nome = parsed.store_nome.presence || "Estabelecimento"
+      s.endereco = parsed.store_endereco
+      s.cidade = parsed.store_cidade
+      s.uf = parsed.store_uf.to_s.upcase[0, 2].presence
     end
+
+    if parsed.store_nome.present? && (store.nome.blank? || store.nome == "Estabelecimento")
+      store.update_columns(nome: parsed.store_nome.to_s.strip, updated_at: Time.current)
+      store.reload
+    end
+
+    store
   end
 
   def hora_for_column(hora_emissao)

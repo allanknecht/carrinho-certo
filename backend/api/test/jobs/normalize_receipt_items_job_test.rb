@@ -15,7 +15,11 @@ class NormalizeReceiptItemsJobTest < ActiveJob::TestCase
 
   test "assigns canonicals for raw lines without canonical" do
     receipt = receipts(:one)
-    receipt.update!(status: "done", chave_acesso: "35250814255342000183650060000099991098765432")
+    receipt.update!(
+      status: "done",
+      chave_acesso: "35250814255342000183650060000099991098765432",
+      data_emissao: Date.new(2025, 6, 1)
+    )
     receipt.receipt_item_raws.delete_all
     row = receipt.receipt_item_raws.create!(
       descricao_bruta: "Arroz 5kg",
@@ -26,10 +30,16 @@ class NormalizeReceiptItemsJobTest < ActiveJob::TestCase
       ordem: 0
     )
 
-    NormalizeReceiptItemsJob.perform_now(receipt.id)
+    assert_difference("ObservedPrice.count", 1) do
+      NormalizeReceiptItemsJob.perform_now(receipt.id)
+    end
 
     row.reload
     assert row.product_canonical_id.present?
     assert_equal "new_canonical", row.normalization_source
+    op = ObservedPrice.find_by!(receipt_item_raw_id: row.id)
+    assert_equal row.product_canonical_id, op.product_canonical_id
+    assert_equal Date.new(2025, 6, 1), op.observed_on
+    assert_equal 21, op.valor_total.to_f
   end
 end

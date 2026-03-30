@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   post "auth/login", to: "auth#login"
   resources :users, only: [:create]
   resources :receipts, only: [:create]
+  get "products/:id/prices", to: "product_prices#show", as: :product_prices
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
