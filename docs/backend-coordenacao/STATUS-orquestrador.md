@@ -25,8 +25,13 @@
 
 - Secção **Contrato mínimo** no plano: **rascunho** (RF09/RF10); tipos JSON finais serão escritos no plano quando os agentes fecharem formatos (ver `STATUS-agente-listas`, `STATUS-agente-catalogo`, `STATUS-agente-lgpd`, `STATUS-agente-rf10-precos`).
 
+## Comunicação entre agentes
+
+- **Digest e protocolo:** `COMUNICACAO.md` — atualizado pelo orquestrador ao reler os STATUS; agentes não sobrescrevem o STATUS alheio.
+
 ## Histórico breve
 
 | Data       | Ação |
 |------------|------|
 | 2026-04-11 | Branch base definida: `backend`. Ordem de merge e bloqueios inicializados. Contrato permanece rascunho até handoff dos agentes. |
+| 2026-04-11 | Adicionado `COMUNICACAO.md` (canais + digest). Relido: todos os `STATUS-agente-*` ainda por preencher; sem alterações novas em `api-contrato.md` para features paralelas. |
