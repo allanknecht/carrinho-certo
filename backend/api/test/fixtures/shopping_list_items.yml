@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shopping_list: one
+  product_canonical: one
+  quantidade: 2
+  ordem: 0
+
+two:
+  shopping_list: one
+  label: Item avulso
+  quantidade: 1
+  ordem: 1

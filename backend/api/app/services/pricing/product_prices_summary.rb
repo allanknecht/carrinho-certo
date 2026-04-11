@@ -41,6 +41,8 @@ module Pricing
 
       any_store_disclosed = stores.any? { |s| s[:prices_disclosed] }
 
+      relevant_price, relevant_row = build_relevant_global(by_store)
+
       {
         product: product_payload(product),
         period_days: PRICE_WINDOW_DAYS,
@@ -48,7 +50,12 @@ module Pricing
         observations_count: observations.size,
         receipts_distinct_count: receipt_count,
         prices_disclosed: any_store_disclosed,
-        relevant_price: build_relevant_global(by_store),
+        relevant_price: relevant_price,
+        price_outlier: PriceOutlierAssessment.payload(
+          by_store: by_store,
+          store_meets_threshold: ->(rows) { store_meets_threshold?(rows) },
+          relevant_observation: relevant_row
+        ),
         stores: stores
       }
     end
@@ -94,13 +101,13 @@ module Pricing
 
     def build_relevant_global(by_store)
       qualifying = by_store.flat_map { |_sid, rows| store_meets_threshold?(rows) ? rows : [] }
-      return nil if qualifying.empty?
+      return [ nil, nil ] if qualifying.empty?
 
-      pick = qualifying.max_by { |o| [o.observed_on, o.updated_at] }
+      pick = qualifying.max_by { |o| [ o.observed_on, o.updated_at ] }
       unit = unit_price(pick)
-      return nil if unit.nil? && pick.valor_total.blank?
+      return [ nil, nil ] if unit.nil? && pick.valor_total.blank?
 
-      {
+      payload = {
         unit_price: unit ? format_decimal(unit) : nil,
         unidade: line_unidade(pick),
         quantidade: format_quantity(pick.quantidade),
@@ -110,6 +117,7 @@ module Pricing
         store_id: pick.store_id,
         basis: "latest_among_verified_stores"
       }
+      [ payload, pick ]
     end
 
     def observation_point(op)

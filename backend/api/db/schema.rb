@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_29_200000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_11_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -71,7 +71,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_29_200000) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.text "processing_error"
     t.datetime "processed_at"
     t.bigint "store_id"
@@ -84,6 +84,27 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_29_200000) do
     t.index ["chave_acesso"], name: "index_receipts_on_chave_acesso_unique_non_null", unique: true, where: "(chave_acesso IS NOT NULL)"
     t.index ["store_id"], name: "index_receipts_on_store_id"
     t.index ["user_id"], name: "index_receipts_on_user_id"
+  end
+
+  create_table "shopping_lists", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", default: "", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_shopping_lists_on_user_id"
+  end
+
+  create_table "shopping_list_items", force: :cascade do |t|
+    t.bigint "shopping_list_id", null: false
+    t.bigint "product_canonical_id"
+    t.string "label"
+    t.decimal "quantidade", precision: 12, scale: 3, default: "1.0", null: false
+    t.integer "ordem", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_canonical_id"], name: "index_shopping_list_items_on_product_canonical_id"
+    t.index ["shopping_list_id", "ordem"], name: "index_shopping_list_items_on_shopping_list_id_and_ordem"
+    t.index ["shopping_list_id"], name: "index_shopping_list_items_on_shopping_list_id"
   end
 
   create_table "stores", force: :cascade do |t|
@@ -113,4 +134,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_29_200000) do
   add_foreign_key "receipt_items_raw", "receipts"
   add_foreign_key "receipts", "stores"
   add_foreign_key "receipts", "users"
+  add_foreign_key "shopping_list_items", "products_canonical", column: "product_canonical_id"
+  add_foreign_key "shopping_list_items", "shopping_lists"
+  add_foreign_key "shopping_lists", "users"
 end

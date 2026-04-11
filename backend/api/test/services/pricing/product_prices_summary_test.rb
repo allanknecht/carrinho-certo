@@ -39,6 +39,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_nil out[:error]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_equal pc.id, out[:product][:id]
       assert_equal 1, out[:observations_count]
       assert_equal 1, out[:receipts_distinct_count]
@@ -85,6 +86,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_equal true, out[:prices_disclosed]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_equal 2, out[:receipts_distinct_count]
       assert_equal "11.00", out[:relevant_price][:unit_price]
       assert_equal "latest_among_verified_stores", out[:relevant_price][:basis]
@@ -153,6 +155,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_equal true, out[:prices_disclosed]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_equal 3, out[:receipts_distinct_count]
       assert_equal "21.00", out[:relevant_price][:unit_price]
       assert_equal store_b.id, out[:relevant_price][:store_id]
@@ -198,6 +201,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_equal false, out[:prices_disclosed]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_nil out[:relevant_price]
       assert_equal 2, out[:observations_count]
       assert_equal 2, out[:receipts_distinct_count]
@@ -240,6 +244,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_equal false, out[:prices_disclosed]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_nil out[:relevant_price]
       s = out[:stores].first
       assert_equal 2, s[:observations_count]
@@ -280,6 +285,7 @@ module Pricing
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
       assert_equal false, out[:prices_disclosed]
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_nil out[:relevant_price]
       s = out[:stores].first
       assert_equal 1, s[:receipts_distinct_at_store]
@@ -318,8 +324,120 @@ module Pricing
       end
 
       out = ProductPricesSummary.call(product_canonical_id: pc.id)
+      refute out[:price_outlier][:relevant_price_atypical_low]
       assert_equal 3, out[:stores].first[:recent_prices].size
       assert_equal "4.00", out[:stores].first[:recent_prices].first[:unit_price]
+    end
+
+    test "flags atypical low relevant price vs other disclosed stores (RF08)" do
+      user = users(:one)
+      store_cheap = Store.create!(cnpj: "12121212000181", nome: "Barato")
+      store_peer = Store.create!(cnpj: "13131313000181", nome: "Referência")
+      pc = ProductCanonical.create!(normalized_key: "TEST OUT1 #{SecureRandom.hex(4)}", display_name: "Outlier cross")
+
+      d_old = Date.current - 2
+      d_new = Date.current
+
+      [ store_peer, store_peer ].each_with_index do |_s, i|
+        receipt = user.receipts.create!(
+          source_url: "https://example.com/peer#{i}",
+          status: "done",
+          store_id: store_peer.id,
+          data_emissao: d_old
+        )
+        row = receipt.receipt_item_raws.create!(
+          descricao_bruta: "Item",
+          ordem: 0,
+          quantidade: 1,
+          valor_unitario: 10,
+          valor_total: 10,
+          product_canonical_id: pc.id
+        )
+        receipt.update!(valor_total: 50)
+        ObservedPrice.create!(
+          product_canonical_id: pc.id,
+          store_id: store_peer.id,
+          receipt_item_raw_id: row.id,
+          observed_on: d_old,
+          quantidade: 1,
+          valor_unitario: 10,
+          valor_total: 10
+        )
+      end
+
+      2.times do |i|
+        receipt = user.receipts.create!(
+          source_url: "https://example.com/cheap#{i}",
+          status: "done",
+          store_id: store_cheap.id,
+          data_emissao: i.zero? ? d_old : d_new
+        )
+        unit = i.zero? ? 20 : 5
+        row = receipt.receipt_item_raws.create!(
+          descricao_bruta: "Item",
+          ordem: 0,
+          quantidade: 1,
+          valor_unitario: unit,
+          valor_total: unit,
+          product_canonical_id: pc.id
+        )
+        receipt.update!(valor_total: 80)
+        ObservedPrice.create!(
+          product_canonical_id: pc.id,
+          store_id: store_cheap.id,
+          receipt_item_raw_id: row.id,
+          observed_on: i.zero? ? d_old : d_new,
+          quantidade: 1,
+          valor_unitario: unit,
+          valor_total: unit
+        )
+      end
+
+      out = ProductPricesSummary.call(product_canonical_id: pc.id)
+      assert_equal "5.00", out[:relevant_price][:unit_price]
+      assert out[:price_outlier][:relevant_price_atypical_low]
+      assert_match(/promoção|desconto/i, out[:price_outlier][:disclaimer])
+    end
+
+    test "does not flag outlier when latest prices are in line across stores" do
+      user = users(:one)
+      s1 = Store.create!(cnpj: "14141414000181", nome: "L1")
+      s2 = Store.create!(cnpj: "15151515000181", nome: "L2")
+      pc = ProductCanonical.create!(normalized_key: "TEST OUT2 #{SecureRandom.hex(4)}", display_name: "No outlier")
+
+      [ s1, s2 ].each do |store|
+        2.times do |i|
+          receipt = user.receipts.create!(
+            source_url: "https://example.com/norm#{store.id}-#{i}",
+            status: "done",
+            store_id: store.id,
+            data_emissao: Date.current
+          )
+          row = receipt.receipt_item_raws.create!(
+            descricao_bruta: "Item",
+            ordem: 0,
+            quantidade: 1,
+            valor_unitario: 10,
+            valor_total: 10,
+            product_canonical_id: pc.id
+          )
+          receipt.update!(valor_total: 40)
+          ObservedPrice.create!(
+            product_canonical_id: pc.id,
+            store_id: store.id,
+            receipt_item_raw_id: row.id,
+            observed_on: Date.current,
+            quantidade: 1,
+            valor_unitario: 10,
+            valor_total: 10
+          )
+        end
+      end
+
+      out = ProductPricesSummary.call(product_canonical_id: pc.id)
+      assert_equal "10.00", out[:relevant_price][:unit_price]
+      refute out[:price_outlier][:relevant_price_atypical_low]
+      assert_nil out[:price_outlier][:disclaimer]
     end
   end
 end

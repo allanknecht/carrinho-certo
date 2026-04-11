@@ -1,5 +1,5 @@
 class Receipt < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :store, optional: true
   has_many :receipt_item_raws, class_name: "ReceiptItemRaw", dependent: :destroy, inverse_of: :receipt
 

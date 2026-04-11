@@ -1,7 +1,8 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_many :receipts, dependent: :destroy
+  has_many :receipts, dependent: :nullify
+  has_many :shopping_lists, dependent: :destroy
 
   normalizes :email, with: ->(e) { e.to_s.downcase.strip }
 

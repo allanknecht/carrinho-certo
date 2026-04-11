@@ -9,6 +9,8 @@ end
 
 module ActiveSupport
   class TestCase
+    set_fixture_class products_canonical: ProductCanonical
+
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors, with: :threads)
 

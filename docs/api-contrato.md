@@ -63,6 +63,20 @@ Minimum contract for the Ruby on Rails API consumed by the mobile app (.NET MAUI
 
 - `401` – invalid credentials
 
+### 1.3. Account deletion (LGPD / RF11)
+
+`DELETE /account`
+
+Requires `Authorization: Bearer <token>`.
+
+Permanently removes the authenticated **user** (email and credentials). **Shopping lists** and **list items** for that user are deleted. **Receipts** submitted by the user are **kept** for aggregate pricing: `receipts.user_id` is set to `null` (anonymous); `chave_acesso` and line data are **not** removed (see [schema-banco.md](schema-banco.md) — LGPD / account deletion).
+
+**Response `204`**
+
+- Empty body.
+
+**Response `401`** — missing or invalid Bearer token.
+
 ---
 
 ## 2. Receipts (NFC-e QR / consultation URL)
@@ -124,13 +138,56 @@ Additional data when `done` (see [schema-banco.md](schema-banco.md)): `numero`, 
 
 ### 2.3. No receipt read API (by design)
 
-The API does **not** expose `GET /receipts` or `GET /receipts/:id`. Users contribute NFC-e URLs to populate a **shared** dataset; the product experience is oriented toward **aggregate prices and suggestions** (e.g. planned `GET /products/...`), not browsing one’s own submitted receipts.
+The API does **not** expose `GET /receipts` or `GET /receipts/:id`. Users contribute NFC-e URLs to populate a **shared** dataset; the product experience is oriented toward **aggregate prices and suggestions** (e.g. `GET /products` and `GET /products/:id/prices`), not browsing one’s own submitted receipts.
 
 The `202` response may still include `id` and `status` for acknowledgment only; clients should not rely on fetching that receipt later via the public API.
 
 ---
 
-## 3. Product prices
+## 3. Product catalog (search / list)
+
+`GET /products`
+
+Requires `Authorization: Bearer <token>`.
+
+Used to discover **`products_canonical.id`** before calling `GET /products/:id/prices`.
+
+**Query parameters**
+
+| Param | Default | Description |
+|--------|---------|-------------|
+| `q` | *(empty)* | Optional substring; matches **`display_name`** or **`normalized_key`** (case-insensitive, SQL `ILIKE`). |
+| `page` | `1` | Page number (≥ 1). |
+| `per` | `20` | Page size (1–100; values above 100 are capped at 100). |
+
+**Response `200`**
+
+```json
+{
+  "products": [
+    {
+      "id": 2,
+      "display_name": "Sprite Lata 350 ml",
+      "normalized_key": "SPRITE LATA 350 ML"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per": 20,
+    "total": 42,
+    "total_pages": 3
+  }
+}
+```
+
+- **`products`**: ordered by **`display_name`** ascending.
+- **`meta.total_pages`**: `0` when **`total`** is `0`.
+
+**Response `401`** — missing or invalid Bearer token.
+
+---
+
+## 4. Product prices
 
 `GET /products/:id/prices`
 
@@ -225,17 +282,179 @@ Observations come from `observed_prices` (no receipt or line ids in the response
 
 ---
 
-## 4. Shopping lists & “where to buy” (skeleton)
+## 5. Shopping lists (RF09)
 
-Not implemented in the API yet; contract kept for roadmap.
+All routes below require `Authorization: Bearer <token>`. Lists and items are **scoped to the authenticated user**; `404` is returned when `:id` belongs to another user.
 
-- `POST /shopping_lists`
-- `POST /shopping_lists/:id/items`
-- `GET /shopping_lists/:id/suggestion`
+### 5.1 Lists CRUD
+
+| Method | Path | Action |
+|--------|------|--------|
+| `GET` | `/shopping_lists` | List the user’s lists (newest `updated_at` first). |
+| `POST` | `/shopping_lists` | Create a list. |
+| `GET` | `/shopping_lists/:id` | Show one list with nested `items`. |
+| `PATCH` / `PUT` | `/shopping_lists/:id` | Update `name`. |
+| `DELETE` | `/shopping_lists/:id` | Delete list and all items. |
+
+**Create — request**
+
+```json
+{ "name": "Compras da semana" }
+```
+
+**List response (`GET /shopping_lists`)**
+
+```json
+{
+  "shopping_lists": [
+    {
+      "id": 1,
+      "name": "Compras da semana",
+      "items_count": 2,
+      "created_at": "2026-04-11T12:00:00.000Z",
+      "updated_at": "2026-04-11T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Single list (`GET` / `PATCH` response, `POST` `201`)** — includes nested `items`:
+
+```json
+{
+  "id": 1,
+  "name": "Compras da semana",
+  "items_count": 2,
+  "created_at": "2026-04-11T12:00:00.000Z",
+  "updated_at": "2026-04-11T12:00:00.000Z",
+  "items": [
+    {
+      "id": 10,
+      "product_canonical_id": 2,
+      "label": null,
+      "quantidade": "2.000",
+      "ordem": 0,
+      "created_at": "2026-04-11T12:00:00.000Z",
+      "updated_at": "2026-04-11T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+- **`quantidade`:** string decimal (scale 3), must be **> 0**.
+- **`ordem`:** integer ≥ 0; ordering within the list is by `ordem` then `id`.
+
+**Errors**
+
+- `401` — missing or invalid token.
+- `404` — list not found (including another user’s id).
+- `422` — validation error (`errors` array of strings).
+
+### 5.2 Items (nested under a list)
+
+| Method | Path | Action |
+|--------|------|--------|
+| `GET` | `/shopping_lists/:shopping_list_id/items` | List items (ordered by `ordem`, then `id`). |
+| `POST` | `/shopping_lists/:shopping_list_id/items` | Add an item. |
+| `PATCH` / `PUT` | `/shopping_lists/:shopping_list_id/items/:id` | Update fields. |
+| `DELETE` | `/shopping_lists/:shopping_list_id/items/:id` | Remove item. |
+
+**Create / update — body** (flat JSON; on update, omitted keys keep previous values where applicable)
+
+```json
+{
+  "product_canonical_id": 2,
+  "label": "Item avulso",
+  "quantidade": "1.500",
+  "ordem": 0
+}
+```
+
+- **`product_canonical_id`:** optional; must reference an existing `products_canonical.id` when set.
+- **`label`:** optional free text (e.g. product not yet in the catalog).
+- If **`ordem` is omitted** on create, the API assigns **max(existing `ordem`) + 1** (append to the end).
+
+**Item-only JSON (`POST` `201`, `PATCH` `200`)** — same shape as each element of `items` above.
+
+**`GET /shopping_lists/:shopping_list_id/items` — response `200`**
+
+```json
+{
+  "items": [
+    {
+      "id": 10,
+      "product_canonical_id": 2,
+      "label": null,
+      "quantidade": "2.000",
+      "ordem": 0,
+      "created_at": "2026-04-11T12:00:00.000Z",
+      "updated_at": "2026-04-11T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Errors**
+
+- `401` — unauthorized.
+- `404` — shopping list not found, or item not in that list.
+- `422` — validation (e.g. invalid `product_canonical_id`, `quantidade` ≤ 0).
+
+### 5.3 Store rankings & estimated totals for a list (RF10)
+
+`GET /shopping_lists/:id/store_rankings`
+
+Returns stores observed for **any** product on the list within the price window, with **estimated_total** and per-store coverage. Pricing rules match **`GET /products/:id/prices`** (`ProductPricesSummary`):
+
+- Only observations with **`observed_on`** in the **last 30 calendar days** (inclusive, ending today).
+- For each **store** and **product**, a unit price counts only if that store has **≥ 2 distinct receipts** (NFC-e) for that product in that window.
+- When the threshold is met, the **latest** observation (by `observed_on`, then `updated_at`) supplies the unit price (same derivation as product prices).
+
+**Response `200`**
+
+```json
+{
+  "shopping_list_id": 3,
+  "period_days": 30,
+  "window": { "from": "2026-03-12", "to": "2026-04-11" },
+  "pricing_criteria": {
+    "min_distinct_receipts_per_store_per_product": 2
+  },
+  "lines": {
+    "total": 5,
+    "with_product": 4,
+    "without_product": 1
+  },
+  "stores": [
+    {
+      "store_id": 1,
+      "nome": "MIX COMERCIO DE SOVETES LTDA ME",
+      "cnpj": "26266835000181",
+      "estimated_total": "42.50",
+      "lines_covered": 3,
+      "lines_missing_price": 2
+    }
+  ]
+}
+```
+
+- **`lines.without_product`:** lines with no `product_canonical_id`; they count as **missing at every store**.
+- **`estimated_total`:** sum of *(unit price × list line `quantidade`)* for lines with a disclosed price at that store; two decimal places as a string.
+- **`lines_covered`:** product lines priced at this store in the window.
+- **`lines_missing_price`:** `without_product` plus product lines without a usable price here.
+- **`stores`:** sorted by **`estimated_total`** ascending, then **`store_id`**. Includes every store that has at least one observation in the window for **some** list product (may still show **`estimated_total` `"0.00"`** if no line meets the threshold).
+
+**Response `404`** — list missing or not owned:
+
+```json
+{ "error": "Shopping list not found" }
+```
+
+**Response `401`** — missing or invalid Bearer token.
 
 ---
 
-## 5. Health
+## 6. Health
 
 `GET /up`
 
@@ -249,8 +468,9 @@ Not implemented in the API yet; contract kept for roadmap.
 
 ---
 
-## 6. Implementation notes
+## 7. Implementation notes
 
+- **Account deletion:** `DELETE /account` runs `User#destroy` with `receipts` associated as `dependent: :nullify` (nullable `receipts.user_id`); shopping lists use `dependent: :destroy`.
 - **Duplicate access keys:** unique partial index on `receipts.chave_acesso` where not null; `409` when the key can be derived from `source_url` before insert; job also checks before save and handles `RecordNotUnique`.
 - **Parser:** NF-e XML first; HTML fallback including SVRS `QrCodeNFce` table layout (two columns, `Código` / `Vl. Unit.` / `Vl. Total` in cell text).
 - **Dev jobs:** `config.active_job.queue_adapter = :async` (in-process). **Tests:** `:test` adapter. Production should use a persistent backend (e.g. Solid Queue) when deploying.
