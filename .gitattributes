@@ -1,0 +1,2 @@
+# Scripts shell usados no Linux/Docker
+backend/api/script/*.sh text eol=lf
