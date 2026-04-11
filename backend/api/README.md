@@ -6,6 +6,7 @@ JSON API for receipt ingestion (NFC-e consultation URLs), authentication, and **
 
 - **[API contract](../../docs/api-contrato.md)** — endpoints, auth, receipt flow, error codes.
 - **[Database schema](../../docs/schema-banco.md)** — tables and processing pipeline.
+- **[App development (PT)](../../docs/app-desenvolvimento.md)** — Docker, connecting the MAUI client, using endpoints from the app.
 
 ## Local run (Docker)
 
