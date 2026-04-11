@@ -3,15 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CarrinhoCerto.Pages.HomePage"
              BackgroundColor="#F2F2F2"
+             Shell.NavBarIsVisible="False"
              Title="HomePage">
 
     <Grid RowDefinitions="Auto, *">
+
         <ContentView Grid.Row="0"
                      BackgroundColor="#FEF035"
                      Padding="0, 15, 0, 15">
             <Image Source="logohorizontal.png"
-                       HorizontalOptions="Center"
-                       WidthRequest="200"/>
+                   HorizontalOptions="Center"
+                   WidthRequest="200"/>
         </ContentView>
 
         <ScrollView Grid.Row="1">
@@ -19,24 +21,156 @@
 
                 <VerticalStackLayout>
                     <Label Text="Bem-vindo,"
-                       TextColor="#616161"
-                       FontSize="14"
-                       FontFamily="PoppinsRegular"/>
+                           TextColor="#616161"
+                           FontSize="14"
+                           FontFamily="PoppinsRegular"/>
 
                     <Label x:Name="lbUser"
-                       Text="Usuário"
-                       TextColor="#616161"
-                       FontSize="22"
-                       FontFamily="PoppinsBold"
-                       Margin="0,-10,0,0"/>
+                           Text="Usuário"
+                           TextColor="#616161"
+                           FontSize="22"
+                           FontFamily="PoppinsBold"
+                           Margin="0,-10,0,0"/>
                 </VerticalStackLayout>
 
+                <Border BackgroundColor="#E80000"
+                        StrokeThickness="0"
+                        HeightRequest="160">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+
+                    <Grid>
+                        <Ellipse x:Name="RippleEnviar" 
+                            Fill="#B30000" 
+                            Opacity="0"
+                            HorizontalOptions="Start" 
+                            VerticalOptions="Start" />
+                        
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="10">
+                        
+                        <Image Source="qrcode.svg"
+                               WidthRequest="45"
+                               HeightRequest="45"
+                               HorizontalOptions="Center"/>
+                        
+                        <Label Text="ENVIAR NOTA FISCAL"
+                               TextColor="#FEF035"
+                               FontFamily="PoppinsBlack"
+                               FontSize="25"
+                               HorizontalOptions="Center"/>
+                        
+                        <Label Text="Atualize os preços e ajude a comunidade"
+                               TextColor="White"
+                               FontFamily="PoppinsRegular"
+                               FontSize="12"
+                               HorizontalOptions="Center"
+                               Margin="0,-20,0,0"/>
+                    </VerticalStackLayout>
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnEnviarNotaTapped"/>
+                        </Border.GestureRecognizers>
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+
+                    <Border Grid.Column="0"
+                            BackgroundColor="White"
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            Padding="15">
+                        
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="15" />
+                        </Border.StrokeShape>
+                        
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <Image Source="list.svg"
+                                   WidthRequest="22"
+                                   HeightRequest="22"
+                                   VerticalOptions="Center" />
+                            
+                            <Label Text="Minhas Listas"
+                                   TextColor="#616161"
+                                   FontFamily="PoppinsBold"
+                                   FontSize="12"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMinhasListasTapped" />
+                        </Border.GestureRecognizers>
+                        
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            BackgroundColor="White"
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            Padding="15">
+                        
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="15" />
+                        </Border.StrokeShape>
+                        
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <Image Source="search.svg"
+                                   WidthRequest="22" HeightRequest="22"
+                                   VerticalOptions="Center" />
+                            
+                            <Label Text="Buscar Preços"
+                                   TextColor="#616161"
+                                   FontFamily="PoppinsBold"
+                                   FontSize="12"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBuscarPrecosTapped" />
+                        </Border.GestureRecognizers>
+                        
+                    </Border>
+                </Grid>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Preços em Queda"
+                           TextColor="#616161"
+                           FontFamily="PoppinsBold"
+                           FontSize="16" />
+
+                    <Border BackgroundColor="White"
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            Padding="15">
+                        
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="15" />
+                        </Border.StrokeShape>
+                        
+                        <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                            <Image Source="trenddown.svg"
+                                   WidthRequest="30" HeightRequest="30"
+                                   VerticalOptions="Center" />
+
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="0">
+                                <Label Text="Óleo de Soja (900ml)"
+                                       TextColor="#616161"
+                                       FontFamily="PoppinsBold" FontSize="14" />
+                                
+                                <Label Text="R$ 5,49 no Atacadão"
+                                       TextColor="#9E9E9E"
+                                       FontFamily="PoppinsRegular"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
-
-
-
-
         </ScrollView>
     </Grid>
 </ContentPage>
