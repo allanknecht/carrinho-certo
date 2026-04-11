@@ -52,19 +52,30 @@ flowchart LR
 
 ## Contrato mínimo (o orquestrador preenche/atualiza após alinhamento)
 
-**Estado (orquestrador):** rascunho; detalhes de tipos JSON e rotas finais entram aqui quando cada agente fechar o contrato no respectivo `STATUS-agente-*.md` e o orquestrador consolidar.
+**Estado (orquestrador):** **Catálogo** fechado em `docs/api-contrato.md` (§3). **RF09** consolidado abaixo com base no código presente no repositório; o agente Listas deve confirmar no `STATUS-agente-listas.md` e alinhar `api-contrato.md` §4 (ainda marcada como skeleton nalgumas cópias). **RF10 / LGPD** seguem em evolução.
 
-### Lista / itens (RF09) — rascunho
+### Catálogo (busca / listagem) — fechado
 
-- `ShoppingList` pertence a `User`.
-- `ShoppingListItem`: `shopping_list_id`, `product_canonical_id` (opcional), `label` texto (opcional), `quantidade` (decimal), `ordem` ou timestamps.
+- Contrato canónico: **`docs/api-contrato.md`** — secção **§3. Product catalog (search / list)**.
+- `GET /products` com `Authorization: Bearer`, query `q`, `page`, `per`; corpo com `products[]` (`id`, `display_name`, `normalized_key`) e `meta` (`page`, `per`, `total`, `total_pages`).
+
+### Lista / itens (RF09) — consolidado (implementação + payloads)
+
+- **Modelo:** `ShoppingList` → `User`; `name` (string, default vazio). `ShoppingListItem` → `shopping_list`, `product_canonical` opcional; campos `label`, `quantidade` (decimal > 0), `ordem` (inteiro ≥ 0).
+- **Rotas (nested):** `resources :shopping_lists` com `resources :items, controller: "shopping_list_items"` → índice/crud de itens sob `/shopping_lists/:shopping_list_id/items`.
+- **Item JSON:** `id`, `product_canonical_id`, `label`, `quantidade` (string decimal), `ordem`, `created_at`, `updated_at` (ISO8601 ms).
+- **Lista JSON:** `id`, `name`, `items_count`, `created_at`, `updated_at`; com itens incluídos: `items` (array no payload de `show` / `create` / `update` conforme controlador).
 
 ### RF10 — entrada/saída esperada
 
 - **Entrada:** `shopping_list_id` (via rota) **ou** payload explícito com array `{ product_canonical_id, quantidade }` para testes.
 - **Saída:** lista ordenada de lojas com `store_id`, `nome`, `cnpj`, `estimated_total` (string decimal), `lines_covered` / `lines_missing_price`, critérios iguais ao `ProductPricesSummary` (janela 30 dias, ≥2 notas por loja para incluir preço daquele produto naquela loja).
 
-*(O orquestrador detalha tipos JSON aqui quando RF09 estiver mergeado.)*
+*(O orquestrador detalha tipos JSON de RF10 aqui quando o agente fechar o formato.)*
+
+### RF08 (outliers) — nota de coordenação
+
+- Serviço dedicado em `app/services/pricing/price_outlier_assessment.rb` (evitar editar o mesmo ficheiro que RF10 no mesmo sprint, salvo acordo).
 
 ---
 

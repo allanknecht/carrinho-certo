@@ -18,12 +18,14 @@
 
 ## Bloqueios entre agentes
 
-- Nenhum bloqueio registado. Os `STATUS-agente-*.md` ainda estão por preencher (início de sprint).
+- **Coordenação / documentação:** os ficheiros `STATUS-agente-*.md` **ainda não refletem** o trabalho visível em `backend/api` (listas, catálogo, outliers). Pedido: cada agente preencher o seu STATUS ao iniciar/concluir para o digest não depender só da inspeção da árvore.
+- **Contrato HTTP:** `docs/api-contrato.md` **§4** ainda indica listas como “skeleton / not implemented” enquanto `routes.rb` expõe CRUD de `shopping_lists` e itens — **Agente Listas** (ou PR único) deve alinhar §4 com os payloads reais.
 - **Atenção:** unificação de `config/routes.rb` pode precisar de um commit agregado (orquestrador ou um agente designado) se vários PRs tocarem rotas no mesmo período.
 
 ## Contratos / decisões registradas (ponteiro para `plano-backend-paralelo.md` seção Contrato)
 
-- Secção **Contrato mínimo** no plano: **rascunho** (RF09/RF10); tipos JSON finais serão escritos no plano quando os agentes fecharem formatos (ver `STATUS-agente-listas`, `STATUS-agente-catalogo`, `STATUS-agente-lgpd`, `STATUS-agente-rf10-precos`).
+- **`plano-backend-paralelo.md` — Contrato mínimo:** Catálogo fechado (ponteiro para `api-contrato.md` §3); RF09 consolidado com rotas/payloads; RF10 ainda a fechar; nota RF08 sobre `price_outlier_assessment.rb`.
+- Detalhe de payloads: ver também `COMUNICACAO.md` (digest) e `docs/api-contrato.md`.
 
 ## Comunicação entre agentes
 
@@ -35,3 +37,4 @@
 |------------|------|
 | 2026-04-11 | Branch base definida: `backend`. Ordem de merge e bloqueios inicializados. Contrato permanece rascunho até handoff dos agentes. |
 | 2026-04-11 | Adicionado `COMUNICACAO.md` (canais + digest). Relido: todos os `STATUS-agente-*` ainda por preencher; sem alterações novas em `api-contrato.md` para features paralelas. |
+| 2026-04-11 | Digest atualizado: código local sugere RF09/Catálogo/RF08 em curso; STATUS ainda vazio; §4 `api-contrato` desalinhada com rotas de listas. Plano — secção Contrato atualizada (Catálogo + RF09 + nota RF08). |
