@@ -30,6 +30,7 @@
 ## Comunicação entre agentes
 
 - **Digest e protocolo:** `COMUNICACAO.md` — atualizado pelo orquestrador ao reler os STATUS; agentes não sobrescrevem o STATUS alheio.
+- **Verificação manual (1 ficheiro por papel, evita conflitos Git):** `verificacao-por-agente/README.md`.
 
 ## Histórico breve
 
@@ -38,3 +39,4 @@
 | 2026-04-11 | Branch base definida: `backend`. Ordem de merge e bloqueios inicializados. Contrato permanece rascunho até handoff dos agentes. |
 | 2026-04-11 | Adicionado `COMUNICACAO.md` (canais + digest). Relido: todos os `STATUS-agente-*` ainda por preencher; sem alterações novas em `api-contrato.md` para features paralelas. |
 | 2026-04-11 | Digest atualizado: código local sugere RF09/Catálogo/RF08 em curso; STATUS ainda vazio; §4 `api-contrato` desalinhada com rotas de listas. Plano — secção Contrato atualizada (Catálogo + RF09 + nota RF08). |
+| 2026-04-11 | Pasta `verificacao-por-agente/` com `TESTES-agente-*.md` (checklist por papel). |
