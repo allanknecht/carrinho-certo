@@ -22,6 +22,7 @@ RUN chmod +x bin/* && \
 
 EXPOSE 3000
 
+# Invoke bash explicitly so CRLF in shebang (Windows checkout) does not break kernel exec.
 # db:create and db:migrate run on first start via bin/docker-entrypoint-dev (already in COPY . .)
-ENTRYPOINT ["/rails/bin/docker-entrypoint-dev"]
+ENTRYPOINT ["/bin/bash", "/rails/bin/docker-entrypoint-dev"]
 CMD ["bin/rails", "server", "-b", "0.0.0.0"]
