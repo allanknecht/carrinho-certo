@@ -1,19 +1,42 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CarrinhoCerto.Pages.LoginPage"
+             x:Class="CarrinhoCerto.Pages.RegisterPage"
              BackgroundColor="#F2F2F2"
+             NavigationPage.HasNavigationBar="False"
              Shell.NavBarIsVisible="False"
-             Title="LoginPage">
+             Title="RegisterPage">
+
     <ScrollView>
         <VerticalStackLayout Spacing="5"
                              Padding="30"
                              VerticalOptions="Center">
- 
-            <Image Source="logo.png"
-                    HeightRequest="120"
-                    HorizontalOptions="Center"
-                    Margin="0, 0, 0, 30"/>
+
+            <HorizontalStackLayout Margin="0, -20, 0, 30" HorizontalOptions="Start">
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnVoltarTapped" />
+                </HorizontalStackLayout.GestureRecognizers>
+                <Label Text="←"
+                       TextColor="#E80000"
+                       FontFamily="PoppinsBlack"
+                       FontSize="30"
+                       VerticalOptions="Center"
+                       Margin="0,-7,0,0"/>
+                
+                <Label Text="VOLTAR"
+                       TextColor="#616161"
+                       FontFamily="PoppinsBold"
+                       FontSize="16"
+                       VerticalOptions="Center"
+                       />
+            </HorizontalStackLayout>
+
+            <Label Text="CRIAR NOVA CONTA"
+                   TextColor="#E80000"
+                   FontSize="22"
+                   FontFamily="PoppinsBlack"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,20" />
 
             <Label Text="E-mail"
                    TextColor="#616161"
@@ -25,7 +48,7 @@
                     BackgroundColor="White"
                     HeightRequest="50"
                     Margin="0,0,0,20">
-                
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8"/>
                 </Border.StrokeShape>
@@ -36,8 +59,9 @@
                            HeightRequest="20"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
-                    
-                    <Entry Grid.Column="1"
+
+                    <Entry x:Name="EmailEntry"
+                           Grid.Column="1"
                            Placeholder="seu@email.com"
                            Keyboard="Email"
                            TextColor="#616161"
@@ -52,12 +76,13 @@
                    TextColor="#616161"
                    Margin="5,0,0,0"
                    FontFamily="PoppinsBold"/>
-            
+
             <Border Stroke="#E5E7EB"
                     StrokeThickness="1"
                     BackgroundColor="White"
-                    HeightRequest="50">
-                
+                    HeightRequest="50"
+                    Margin="0,0,0,20">
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8"/>
                 </Border.StrokeShape>
@@ -68,8 +93,9 @@
                            HeightRequest="20"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
-                    
-                    <Entry Grid.Column="1"
+
+                    <Entry x:Name="PasswordEntry"
+                           Grid.Column="1"
                            Placeholder="••••••••"
                            IsPassword="True"
                            TextColor="#616161"
@@ -79,55 +105,23 @@
                 </Grid>
             </Border>
 
-            <Button x:Name="btEntrar"
-                    Text="ENTRAR" BackgroundColor="#E80000"
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="False"
+                               IsVisible="False"
+                               Color="#E80000"
+                               HorizontalOptions="Center"
+                               Margin="0,10,0,0" />
+
+            <Button Text="CADASTRAR" 
+                    BackgroundColor="#E80000"
                     TextColor="#fef035"
                     FontAttributes="Bold"
                     FontSize="25"
                     CornerRadius="10"
                     HeightRequest="55"
-                    Margin="0,20,0,20"
-                    Clicked="Entrar_Clicked"
+                    Margin="0,10,0,20"
+                    Clicked="OnCadastrarClicked"
                     FontFamily="PoppinsBlack"/>
-
-            <HorizontalStackLayout x:Name="tapEsqueceu"
-                                   HorizontalOptions="Center"
-                                   Spacing="5"
-                                   Margin="0,10,0,-10">
-                
-                <Label Text="Esqueceu a senha?"
-                       TextColor="#6B7280"
-                       FontFamily="PoppinsRegular"
-                       Margin="0,0,0,0"/>
-                
-                <Label Text="Recuperar!"
-                       TextColor="#E80000"
-                       FontFamily="PoppinsBold">
-                    
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="TapEsqueceu_Tapped"/>
-                    </Label.GestureRecognizers>
-                </Label>
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout x:Name="tapCadastro"
-                                   HorizontalOptions="Center"
-                                   Spacing="5"
-                                   Margin="0,10,0,0">
-                
-                <Label Text="Não tem conta?"
-                       TextColor="#6B7280"
-                       FontFamily="PoppinsRegular"/>
-                
-                <Label Text="Cadastre-se!"
-                       TextColor="#E80000"
-                       FontFamily="PoppinsBold">
-                    
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="TapCadastro_Tapped" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </HorizontalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>
