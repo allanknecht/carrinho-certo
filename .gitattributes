@@ -1,2 +1,5 @@
 # Scripts shell usados no Linux/Docker
 backend/api/script/*.sh text eol=lf
+
+# Binstubs e entrypoints: CRLF no Windows quebra shebang no container (volume monta o host)
+backend/api/bin/* text eol=lf
