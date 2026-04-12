@@ -11,9 +11,9 @@ bundle/
 tmp/
 vendor/bundle/
 
-# .NET
-bin/
-obj/
+# .NET (build output under frontend; do not use a global `bin/` — Rails needs backend/api/bin/)
+frontend/**/bin/
+frontend/**/obj/
 *.user
 *.suo
 .vs/

@@ -1,0 +1,12 @@
+#!/bin/bash -e
+set -e
+
+# Gemfile.lock can change on the host while api_bundle volume keeps old gems — install if needed
+if [ "$1" = "bin/rails" ] && [ "$2" = "server" ]; then
+  bundle check || bundle install
+  bin/rails db:prepare
+  # Mounted ./backend/api can leave a stale pid from a previous container exit
+  rm -f tmp/pids/server.pid
+fi
+
+exec "$@"

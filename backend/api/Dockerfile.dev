@@ -22,9 +22,6 @@ RUN chmod +x bin/* && \
 
 EXPOSE 3000
 
-# db:create and db:migrate run on first start via entrypoint
-COPY bin/docker-entrypoint-dev /rails/bin/docker-entrypoint-dev
-RUN chmod +x /rails/bin/docker-entrypoint-dev
-
+# db:create and db:migrate run on first start via bin/docker-entrypoint-dev (already in COPY . .)
 ENTRYPOINT ["/rails/bin/docker-entrypoint-dev"]
 CMD ["bin/rails", "server", "-b", "0.0.0.0"]
