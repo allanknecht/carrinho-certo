@@ -12,9 +12,9 @@ public partial class LoginPage : ContentPage
         this.Window.Page = new TabNav();
     }
 
-    private async void TapCadastro_Tapped(object sender, TappedEventArgs e)
+    private void TapCadastro_Tapped(object sender, TappedEventArgs e)
     {
-        await DisplayAlert("Cadastro", "O fluxo de cadastro será construído em breve.", "OK");
+        this.Window.Page = new RegisterPage();
     }
 
     private async void TapEsqueceu_Tapped(object sender, TappedEventArgs e)
