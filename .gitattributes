@@ -3,3 +3,4 @@ backend/api/script/*.sh text eol=lf
 
 # Binstubs e entrypoints: CRLF no Windows quebra shebang no container (volume monta o host)
 backend/api/bin/* text eol=lf
+backend/api/docker-entrypoint-wrapper.sh text eol=lf

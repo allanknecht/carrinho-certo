@@ -13,6 +13,10 @@ ENV BUNDLE_PATH=/usr/local/bundle
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
+# Lives outside /rails so the host volume never overwrites it; strips CRLF from mounted bin/ at runtime.
+COPY docker-entrypoint-wrapper.sh /docker-entrypoint-wrapper.sh
+RUN chmod +x /docker-entrypoint-wrapper.sh && sed -i "s/\r$//g" /docker-entrypoint-wrapper.sh
+
 COPY . .
 
 # Ensure binstubs are executable and use `ruby` instead of `ruby.exe`
@@ -22,7 +26,6 @@ RUN chmod +x bin/* && \
 
 EXPOSE 3000
 
-# Invoke bash explicitly so CRLF in shebang (Windows checkout) does not break kernel exec.
-# db:create and db:migrate run on first start via bin/docker-entrypoint-dev (already in COPY . .)
-ENTRYPOINT ["/bin/bash", "/rails/bin/docker-entrypoint-dev"]
+# Wrapper fixes CRLF on Windows-mounted /rails/bin, then runs bin/docker-entrypoint-dev.
+ENTRYPOINT ["/docker-entrypoint-wrapper.sh"]
 CMD ["bin/rails", "server", "-b", "0.0.0.0"]
