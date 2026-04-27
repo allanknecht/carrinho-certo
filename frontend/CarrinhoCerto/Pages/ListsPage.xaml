@@ -4,7 +4,7 @@
              x:Class="CarrinhoCerto.Pages.ListsPage"
              BackgroundColor="#F2F2F2"
              Title="ListsPage">
-    
+
     <Grid RowDefinitions="Auto, *">
 
         <ContentView Grid.Row="0"
@@ -14,5 +14,73 @@
                        HorizontalOptions="Center"
                        WidthRequest="200"/>
         </ContentView>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="25">
+                <Border BackgroundColor="#E80000"
+                        StrokeThickness="0"
+                        HeightRequest="50">
+                    
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+
+                    <Grid>
+                        <Ellipse x:Name="RippleEnviar" 
+                                Fill="#B30000" 
+                                Opacity="0"
+                                HorizontalOptions="Start" 
+                                VerticalOptions="Start" />
+
+                        <Label Text="CRIAR NOVA LISTA"
+                           TextColor="#FEF035"
+                           FontFamily="PoppinsBlack"
+                           FontSize="25"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                    </Grid>
+
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCriarListTapped"/>
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Minhas Listas de Compra"
+                           TextColor="#616161"
+                           FontFamily="PoppinsBold"
+                           FontSize="16"
+                           Margin="0,10,0,0"/>
+
+                    <Border BackgroundColor="White"
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            Padding="15">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="15" />
+                        </Border.StrokeShape>
+
+                        <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                            <Image Source="list.svg"
+                                   WidthRequest="30" HeightRequest="30"
+                                   VerticalOptions="Center" />
+
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="0">
+                                <Label Text="Churrasco Domingão"
+                                       TextColor="#616161"
+                                       FontFamily="PoppinsBold" FontSize="14" />
+
+                                <Label Text="Festa da tia Madalena"
+                                       TextColor="#9E9E9E"
+                                       FontFamily="PoppinsRegular"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>
