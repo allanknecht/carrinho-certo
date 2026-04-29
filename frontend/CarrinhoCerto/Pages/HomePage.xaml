@@ -19,7 +19,7 @@
             <VerticalStackLayout Padding="20" Spacing="25">
 
                 <VerticalStackLayout>
-                    <Label Text="Bem-vindo,"
+                    <Label Text="E aí,"
                            TextColor="#616161"
                            FontSize="14"
                            FontFamily="PoppinsRegular"/>
@@ -61,7 +61,7 @@
                                FontSize="25"
                                HorizontalOptions="Center"/>
                         
-                        <Label Text="Atualize os preços e ajude a comunidade"
+                        <Label Text="Mostra pra turma onde tá barato de verdade"
                                TextColor="White"
                                FontFamily="PoppinsRegular"
                                FontSize="12"
@@ -136,7 +136,7 @@
                 </Grid>
 
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Preços em Queda"
+                    <Label Text="Ladeira abaixo (Aproveita!)"
                            TextColor="#616161"
                            FontFamily="PoppinsBold"
                            FontSize="16" />

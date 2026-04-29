@@ -31,12 +31,19 @@
                        />
             </HorizontalStackLayout>
 
-            <Label Text="CRIAR NOVA CONTA"
+            <Label Text="CHEGA MAIS!"
                    TextColor="#E80000"
                    FontSize="22"
                    FontFamily="PoppinsBlack"
                    HorizontalOptions="Center"
                    Margin="0,0,0,20" />
+
+            <Label Text="É só preencher abaixo:"
+                   TextColor="#616161"
+                   FontFamily="PoppinsRegular"
+                   FontSize="12"
+                   Margin="0,-30,0,10"
+                   HorizontalOptions="Center"/>
 
             <Label Text="E-mail"
                    TextColor="#616161"

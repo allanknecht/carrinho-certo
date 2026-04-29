@@ -14,5 +14,201 @@
                        HorizontalOptions="Center"
                        WidthRequest="200"/>
         </ContentView>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="15">
+
+                <Border Stroke="#E5E7EB"
+                    StrokeThickness="1"
+                    BackgroundColor="White"
+                    HeightRequest="50"
+                    Margin="0,0,0,0">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+
+                    <Grid ColumnDefinitions="50, *">
+                        <Image Source="search2"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+
+                        <Entry Grid.Column="1"
+                           Placeholder="Fala aí..."
+                           Keyboard="Default"
+                           TextColor="#616161"
+                           BackgroundColor="Transparent"
+                           FontFamily="PoppinsRegular"
+                           HeightRequest="70"/>
+                    </Grid>
+                </Border>
+
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Todos" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
+                        <Button Text="Mercadão do Zé" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
+                        <Button Text="Hiper Mercado" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
+                        <Button Text="Mercearia da Esquina" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <VerticalStackLayout Spacing="15">
+
+                    <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="80, *" RowDefinitions="Auto, Auto, Auto, Auto">
+                            <Border Grid.RowSpan="3" WidthRequest="65"
+                                    HeightRequest="65"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#F9FAFB"
+                                    Stroke="#E5E7EB"
+                                    VerticalOptions="Start">
+                                
+                                <Label Text="🍚"
+                                       FontSize="30"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label Grid.Column="1"
+                                   Text="Arroz Branco Tipo 1 (5kg)"
+                                   FontFamily="PoppinsBold"
+                                   FontSize="14"
+                                   TextColor="#616161"
+                                   Margin="10,0,0,0"/>
+                            
+                            <Label Grid.Row="1"
+                                   Grid.Column="1" 
+                                   Text="Camil" FontFamily="PoppinsRegular"
+                                   TextColor="#616161"
+                                   FontSize="12"
+                                   Margin="10,-5,0,0"/>
+
+                            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto, *" Margin="10,10,0,0">
+                                <Border BackgroundColor="#E80000" StrokeThickness="0" Padding="8,4" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="4" />
+                                    </Border.StrokeShape>
+                                    <Label Text="TÁ SAINDO POR"
+                                           TextColor="White"
+                                           FontSize="10"
+                                           FontFamily="PoppinsBold"/>
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                    <Label Text="R$ 24,90"
+                                           FontFamily="PoppinsBold"
+                                           FontSize="18" TextColor="#111827"
+                                           HorizontalOptions="End"/>
+                                    
+                                    <Label Text="no Supermercado Extra"
+                                           FontFamily="PoppinsRegular"
+                                           FontSize="10"
+                                           TextColor="#616161"
+                                           HorizontalOptions="End"
+                                           Margin="0,-7,0,0"/>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto" Margin="0,15,0,0">
+                                <Label Text="Pra ter ideia: Carrefour"
+                                       FontFamily="PoppinsRegular"
+                                       FontSize="10"
+                                       TextColor="#616161"
+                                       VerticalOptions="Center"/>
+                                
+                                <Label Grid.Column="1"
+                                       Text="R$ 25,50"
+                                       FontSize="14"
+                                       FontFamily="PoppinsBold"
+                                       TextColor="#9CA3AF"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="80, *" RowDefinitions="Auto, Auto, Auto, Auto">
+                            <Border Grid.RowSpan="3"
+                                    WidthRequest="65"
+                                    HeightRequest="65"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#F9FAFB"
+                                    Stroke="#E5E7EB"
+                                    VerticalOptions="Start">
+                                
+                                <Label Text="🥛" FontSize="30" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label Grid.Column="1"
+                                   Text="Leite Integral (1L)"
+                                   FontFamily="PoppinsBold"
+                                   FontSize="14"
+                                   TextColor="#616161"
+                                   Margin="10,0,0,0"/>
+                            
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="Parmalat"
+                                   FontFamily="PoppinsRegular"
+                                   TextColor="#616161"
+                                   FontSize="12"
+                                   Margin="10,-5,0,0"/>
+
+                            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto, *" Margin="10,10,0,0">
+                                <Border BackgroundColor="#E80000" StrokeThickness="0" Padding="8,4" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="4" />
+                                    </Border.StrokeShape>
+                                    <Label Text="TÁ SAINDO POR"
+                                           TextColor="White"
+                                           FontSize="10"
+                                           FontFamily="PoppinsBold"/>
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                    <Label Text="R$ 4,89"
+                                           FontFamily="PoppinsBold"
+                                           FontSize="18"
+                                           TextColor="#111827"
+                                           HorizontalOptions="End"/>
+                                    
+                                    <Label Text="no Carrefour Bairro"
+                                           FontFamily="PoppinsRegular"
+                                           FontSize="10"
+                                           TextColor="#616161"
+                                           HorizontalOptions="End"
+                                           Margin="0,-7,0,0"/>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto" Margin="0,15,0,0">
+                                <Label Text="Pra ter ideia: Supermercado Extra"
+                                       FontFamily="PoppinsRegular"
+                                       FontSize="10"
+                                       TextColor="#616161"
+                                       VerticalOptions="Center"/>
+                                
+                                <Label Grid.Column="1"
+                                       Text="R$ 5,10"
+                                       FontSize="14"
+                                       FontFamily="PoppinsBold"
+                                       TextColor="#9CA3AF"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

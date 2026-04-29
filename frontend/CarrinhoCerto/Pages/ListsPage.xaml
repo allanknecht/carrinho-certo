@@ -46,7 +46,7 @@
                 </Border>
 
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Minhas Listas de Compra"
+                    <Label Text="Minhas listinhas"
                            TextColor="#616161"
                            FontFamily="PoppinsBold"
                            FontSize="16"
@@ -74,12 +74,12 @@
                                 <Label Text="Festa da tia Madalena"
                                        TextColor="#9E9E9E"
                                        FontFamily="PoppinsRegular"
-                                       FontSize="12" />
+                                       FontSize="12"
+                                       Margin="0,-7,0,0"/>
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
                     </Border>
                 </VerticalStackLayout>
-
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
