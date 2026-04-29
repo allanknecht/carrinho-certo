@@ -127,10 +127,10 @@
                                 HorizontalOptions="Start" 
                                 VerticalOptions="Start" />
 
-                        <Label Text="SAIR DO APP"
+                        <Label Text="BATER PONTO (SAIR)"
                            TextColor="#FEF035"
                            FontFamily="PoppinsBlack"
-                           FontSize="25"
+                           FontSize="20"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
                     </Grid>

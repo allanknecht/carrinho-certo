@@ -17,8 +17,8 @@ public partial class LoginPage : ContentPage
         this.Window.Page = new RegisterPage();
     }
 
-    private async void TapEsqueceu_Tapped(object sender, TappedEventArgs e)
+    private void TapEsqueceu_Tapped(object sender, TappedEventArgs e)
     {
-        await DisplayAlert("Recuperar Senha", "O fluxo de recuperação será construído em breve.", "OK");
+        this.Window.Page = new ForgotPage();
     }
 }
