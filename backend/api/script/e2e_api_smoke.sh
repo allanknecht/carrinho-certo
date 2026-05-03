@@ -47,7 +47,7 @@ CODE=$(curl -s -o /dev/null -w "%{http_code}" "${AUTH[@]}" "$BASE/products/99999
 
 echo "=== 8) GET /products/:id/prices ==="
 R=$(curl -s "${AUTH[@]}" "$BASE/products/$PID/prices")
-echo "$R" | ruby -rjson -e 'j=JSON.parse(STDIN.read); raise "sem price_outlier" unless j.key?("price_outlier"); raise "sem stores" unless j.key?("stores")'
+echo "$R" | ruby -rjson -e 'j=JSON.parse(STDIN.read); raise "sem stores" unless j.key?("stores"); raise "sem product" unless j.key?("product")'
 ok "GET /products/$PID/prices JSON completo"
 
 echo "=== 9) POST /shopping_lists ==="
@@ -81,7 +81,7 @@ CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE/shopping_lists/$LI
 echo "=== 11) GET /shopping_lists/:id/store_rankings ==="
 CODE=$(curl -s -o /dev/null -w "%{http_code}" "${AUTH[@]}" "$BASE/shopping_lists/$LID/store_rankings")
 R=$(curl -s "${AUTH[@]}" "$BASE/shopping_lists/$LID/store_rankings")
-echo "$R" | ruby -rjson -e 'j=JSON.parse(STDIN.read); raise "period_days" unless j["period_days"]==30'
+echo "$R" | ruby -rjson -e 'j=JSON.parse(STDIN.read); raise "sem stores" unless j.key?("stores"); raise "sem lines" unless j.key?("lines")'
 [[ "$CODE" == "200" ]] && ok "store_rankings $CODE" || bad "store_rankings $CODE"
 
 echo "=== 12) PATCH /shopping_lists/:id ==="

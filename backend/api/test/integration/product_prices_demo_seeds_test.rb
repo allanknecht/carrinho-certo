@@ -15,61 +15,44 @@ class ProductPricesDemoSeedsTest < ActionDispatch::IntegrationTest
     @beta_id = Seeds::PricingDemo.product_beta_id
   end
 
-  test "GET prices for alpha: one-note store hides prices; multi-note stores disclose and recent_prices" do
+  test "GET prices for alpha: latest per store by emission date" do
     get product_prices_path(@alpha_id),
       headers: { "Authorization" => "Bearer #{@token}" }
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal true, body["prices_disclosed"]
-    assert_equal "11.00", body["relevant_price"]["unit_price"]
-    assert_equal "latest_among_verified_stores", body["relevant_price"]["basis"]
+    refute body.key?("relevant_price")
+    refute body.key?("price_outlier")
 
     by_name = body["stores"].index_by { |s| s["nome"] }
 
     one = by_name["Mercado Uma Nota (demo)"]
-    assert_equal false, one["prices_disclosed"]
-    assert_equal 1, one["receipts_distinct_at_store"]
-    assert_equal [], one["recent_prices"]
+    assert_equal "10.00", one["unit_price"]
+    assert one["observed_on"].present?
 
     two = by_name["Mercado Duas Notas (demo)"]
-    assert_equal true, two["prices_disclosed"]
-    assert_equal 2, two["receipts_distinct_at_store"]
-    assert_equal 2, two["recent_prices"].size
-    assert_equal "18.00", two["recent_prices"][0]["unit_price"]
-    assert_equal "15.00", two["recent_prices"][1]["unit_price"]
+    assert_equal "18.00", two["unit_price"]
 
     three = by_name["Mercado Três Notas (demo)"]
-    assert_equal true, three["prices_disclosed"]
-    assert_equal 3, three["receipts_distinct_at_store"]
-    assert_equal 3, three["recent_prices"].size
-    # Mais recente primeiro (data_emissao mais nova = última nota da série de 3)
-    assert_equal "11.00", three["recent_prices"][0]["unit_price"]
-    assert_equal "11.50", three["recent_prices"][1]["unit_price"]
-    assert_equal "12.00", three["recent_prices"][2]["unit_price"]
+    assert_equal "11.00", three["unit_price"]
   end
 
-  test "GET prices for beta: hidden at one-note store; relevant from two-note store only" do
+  test "GET prices for beta: one-note store still shows price" do
     get product_prices_path(@beta_id),
       headers: { "Authorization" => "Bearer #{@token}" }
 
     assert_response :success
     body = JSON.parse(response.body)
 
-    assert_equal true, body["prices_disclosed"]
-    assert_equal "9.00", body["relevant_price"]["unit_price"]
+    refute body.key?("relevant_price")
 
     by_name = body["stores"].index_by { |s| s["nome"] }
 
-    assert_equal false, by_name["Mercado Uma Nota (demo)"]["prices_disclosed"]
-    assert_equal [], by_name["Mercado Uma Nota (demo)"]["recent_prices"]
+    assert_equal "8.00", by_name["Mercado Uma Nota (demo)"]["unit_price"]
 
     two = by_name["Mercado Duas Notas (demo)"]
-    assert_equal true, two["prices_disclosed"]
-    assert_equal 2, two["recent_prices"].size
-    assert_equal "9.00", two["recent_prices"][0]["unit_price"]
-    assert_equal "7.50", two["recent_prices"][1]["unit_price"]
+    assert_equal "9.00", two["unit_price"]
   end
 
   test "unknown product returns 404" do

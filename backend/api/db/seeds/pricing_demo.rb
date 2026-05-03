@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Cenários para GET /products/:id/prices (janela fixa 30 dias; por loja: ≥2 notas distintas na janela).
+# Cenários para GET /products/:id/prices: último preço por loja (data de emissão da NFC-e).
 # Rodar: bin/rails db:seed (em development) ou: bin/rails runner "Seeds::PricingDemo.run!"
 #
 module Seeds
@@ -41,7 +41,7 @@ module Seeds
       self.product_beta_id = beta.id
 
       # --- Produto Alpha ---
-      # Loja "uma nota": só 1 NFC-e → não mostra preço nessa loja
+      # Loja "uma nota": 1 NFC-e → preço visível (última por loja)
       add_observation!(
         user: user,
         store: stores[:one],
@@ -55,7 +55,7 @@ module Seeds
         valor_total: BigDecimal("20.00")
       )
 
-      # Loja "duas notas": 2 NFC-e → mostra preço + recent_prices (2 entradas)
+      # Loja "duas notas": 2 NFC-e → última emissão vence
       add_observation!(
         user: user,
         store: stores[:two],
@@ -81,7 +81,7 @@ module Seeds
         valor_total: BigDecimal("18.00")
       )
 
-      # Loja "três notas": 3 NFC-e → até 3 pontos em recent_prices
+      # Loja "três notas": 3 NFC-e → última emissão (mais recente)
       [ BigDecimal("12.00"), BigDecimal("11.50"), BigDecimal("11.00") ].each_with_index do |unit, i|
         add_observation!(
           user: user,
@@ -98,7 +98,7 @@ module Seeds
       end
 
       # --- Produto Beta ---
-      # Mesma loja "uma nota": 1 nota só → oculto aqui
+      # Mesma loja "uma nota": 1 nota com Beta
       add_observation!(
         user: user,
         store: stores[:one],
@@ -112,7 +112,7 @@ module Seeds
         valor_total: BigDecimal("8.00")
       )
 
-      # Loja "duas notas": 2 notas com Beta → visível; relevant global vem do mais recente entre lojas "verificadas"
+      # Loja "duas notas": 2 notas com Beta → última emissão
       add_observation!(
         user: user,
         store: stores[:two],
@@ -148,6 +148,7 @@ module Seeds
       demo_receipts.destroy_all
 
       Store.where(cnpj: %w[99000001000109 99000002000180 99000003000160]).delete_all
+      ShoppingListItem.where(product_canonical_id: demo_products.select(:id)).update_all(product_canonical_id: nil)
       demo_products.delete_all
       User.where(email: USER_EMAIL).delete_all
     end

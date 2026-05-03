@@ -142,7 +142,7 @@ Written by `Pricing::RecordObservedPrice` at the end of `NormalizeReceiptItemsJo
 
 The following describe **additional** targets for lists, alerts, and richer analytics (beyond `observed_prices`).
 
-**Relevant price rule (MVP idea):** among `observed_prices` rows with **≥ 2 receipts** in the window, prefer the most recent; if none, use the latest single observation and label “based on 1 receipt”. See original product spec for mode, outliers, and UI copy.
+**HTTP pricing:** latest row per store by receipt `observed_on` (see [api-contrato.md](api-contrato.md) § product prices).
 
 ### `shopping_lists`, `shopping_list_items`
 

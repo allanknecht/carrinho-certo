@@ -1,6 +1,6 @@
 # Desenvolvimento do app (.NET MAUI) com a API local
 
-Este guia é para quem vai **integrar o aplicativo** (`frontend/CarrinhoCerto`) com o **backend Rails** em desenvolvimento. O contrato oficial dos endpoints continua em **[api-contrato.md](api-contrato.md)** (inglês); aqui está o **como fazer** no dia a dia.
+Este guia é para quem vai **integrar o aplicativo** (`frontend/CarrinhoCerto`) com o **backend Rails** em desenvolvimento. Lista de endpoints e payloads em português: **[frontend-guia-api-e-ordem.md](frontend-guia-api-e-ordem.md)**. Contrato canónico (inglês): **[api-contrato.md](api-contrato.md)**. Aqui fica o **como fazer** no dia a dia (Docker, rede, testes rápidos).
 
 ---
 
@@ -163,17 +163,11 @@ No repositório há também o script **`backend/api/script/e2e_api_smoke.sh`** (
 
 ---
 
-## 8. Ordem sugerida de telas / features no app
+## 8. Ordem de trabalho no app
 
-1. **Configuração** da URL base + teste de `GET /up` ou `GET /products` com token fixo manual.  
-2. **Cadastro + login** reais (`POST /users`, `POST /auth/login`) e persistência do token.  
-3. **Busca de produtos** (`GET /products`) e **detalhe de preços** (`GET /products/:id/prices`), exibindo `price_outlier` se fizer sentido na UX.  
-4. **Listas** (CRUD + itens).  
-5. **“Onde comprar”** (`GET …/store_rankings`).  
-6. **Enviar nota** (`POST /receipts`) — tratar **202**, mensagem ao utilizador de que o processamento pode demorar; opcionalmente polling ou só feedback genérico conforme UX.  
-7. **Excluir conta** (`DELETE /account`) e limpar token local.
+Ordem sugerida de integração (endpoints, payloads, fases): **[frontend-guia-api-e-ordem.md](frontend-guia-api-e-ordem.md)**.
 
-Telas e fluxos de UX em português: **[telas-do-app.md](telas-do-app.md)**.
+Telas e UX em português: **[telas-do-app.md](telas-do-app.md)**.
 
 ---
 
@@ -182,6 +176,7 @@ Telas e fluxos de UX em português: **[telas-do-app.md](telas-do-app.md)**.
 | Ficheiro | Conteúdo |
 |----------|------------|
 | [api-contrato.md](api-contrato.md) | Contrato HTTP (payloads, códigos, regras) |
+| [frontend-guia-api-e-ordem.md](frontend-guia-api-e-ordem.md) | **(PT)** Guia para o front: todos os endpoints, respostas e ordem de implementação |
 | [schema-banco.md](schema-banco.md) | Modelo de dados e pipeline de recibos |
 | [estrutura-repositorio.md](estrutura-repositorio.md) | Layout do monorepo |
 | [backend/api/README.md](../backend/api/README.md) | Jobs, seeds, scripts úteis da API |

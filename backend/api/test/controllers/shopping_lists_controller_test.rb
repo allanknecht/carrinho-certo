@@ -30,8 +30,8 @@ class ShoppingListsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = JSON.parse(response.body)
     assert_equal list.id, body["shopping_list_id"]
-    assert_equal 30, body["period_days"]
-    assert body["window"]["from"].present?
+    refute body.key?("period_days")
+    refute body.key?("window")
     assert_equal [], body["stores"]
     assert_equal 0, body["lines"]["total"]
   ensure
