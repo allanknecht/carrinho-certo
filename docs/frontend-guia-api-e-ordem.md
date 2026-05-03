@@ -1,6 +1,6 @@
 # Guia para o front — API, respostas e ordem de implementação
 
-Documento para a equipa do **.NET MAUI** (`frontend/CarrinhoCerto`): o que a API faz, o que cada endpoint devolve, e **uma ordem sugerida** de trabalho com exemplos de uso.
+Documento para a equipa do **.NET MAUI** (`frontend/CarrinhoCerto`): o que a API faz, o que cada endpoint devolve, e **uma ordem sugerida** de trabalho com exemplos de uso. Descreve o contrato **atual** da API para quem for implementar ou ligar o app; não pressupõe nada já feito no cliente.
 
 - **Contrato detalhado (EN):** [api-contrato.md](api-contrato.md)  
 - **Rede, emulador, Docker:** [app-desenvolvimento.md](app-desenvolvimento.md)
@@ -147,7 +147,7 @@ Após sucesso, apagar token local e dados sensíveis da app.
 ```
 
 - **`stores` vazio:** ainda não há `observed_prices` para esse produto (nota não processada ou linha sem produto canónico).
-- **Não existe** `relevant_price` nem `price_outlier`. Se a UI precisar de **um único número** “destaque”, calcular no cliente (ex.: menor `unit_price` entre lojas, ou primeira loja da lista — definir regra de produto).
+- A resposta traz só **`product`** e **`stores`** (estrutura do JSON acima). Se a UI precisar de um **único valor de destaque** (ex.: cartão na lista), definir no app como o derivar de `stores` (por exemplo menor `unit_price`, ou loja preferida).
 
 | **`404`** | `{ "error": "Product not found" }` |
 
@@ -345,7 +345,7 @@ A ideia é **desbloquear login e rede primeiro**, depois **catálogo e preços**
 |-------|--------|-----------|
 | 2.1 | Lista paginada + pesquisa (debounce no `q`) | `GET /products?q=...&page=&per=` |
 | 2.2 | Detalhe de preços por loja; mostrar `observed_on` como “data do preço (cupom)” | `GET /products/:id/prices` |
-| 2.3 | Se a UI precisar de um “preço em destaque” único, **derivar no app** a partir de `stores` (ex.: mínimo, ou loja preferida) — **não** esperar `relevant_price` da API | Mesmo endpoint |
+| 2.3 | Se a UI precisar de um “preço em destaque” único, calcular no app a partir de `stores` (regra de produto: ex. menor preço ou loja preferida) | `GET /products/:id/prices` |
 
 **Porquê antes das listas:** reutilizam os mesmos `product.id` e o mesmo modelo mental de preço por loja que o ranking usa por baixo.
 
@@ -398,9 +398,4 @@ A ideia é **desbloquear login e rede primeiro**, depois **catálogo e preços**
 
 ---
 
-## Resumo para quem vem do contrato antigo
-
-- **`GET /products/:id/prices`:** não enviar nem esperar `relevant_price`, `price_outlier`, `recent_prices`, `period_days`, `prices_disclosed`.
-- **`GET .../store_rankings`:** não enviar nem esperar `period_days`, `window`, `pricing_criteria`.
-
-Qualquer dúvida de campo a campo, o **canónico** continua a ser [api-contrato.md](api-contrato.md) (inglês), alinhado com este guia.
+Para detalhe campo a campo e códigos HTTP, ver também [api-contrato.md](api-contrato.md) (inglês).
