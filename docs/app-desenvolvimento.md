@@ -191,6 +191,7 @@ Telas e UX em português: **[telas-do-app.md](telas-do-app.md)**.
 | App em celular não alcança o PC | Mesma rede, firewall, IP correto, porta 3000 aberta |
 | Sempre 401 | Token ausente, expirado (tokens têm validade) ou header `Authorization` incorreto |
 | POST /receipts retorna 409 | Chave da NFC-e já existe no sistema — tratar mensagem ao utilizador |
+| `POST /auth/login` devolve **400** no PowerShell | O body JSON partiu-se (escapes em `curl -d "..."`). Usar `Invoke-RestMethod` com `ConvertTo-Json`, ou ficheiro + `curl --data-binary @ficheiro`, ou o script **`backend/api/script/smoke_endpoints_one_by_one.ps1`**. |
 | Docker não sobe | Docker Desktop ligado; `docker compose ps`; ver logs: `docker compose logs api` |
 
 ---

@@ -20,7 +20,7 @@ API: `http://localhost:3000`. Set `DATABASE_URL` if running `bin/rails` outside 
 
 ## Demo data (`db:seed`)
 
-In **development**, `bin/rails db:seed` loads **`Seeds::PricingDemo`** (`db/seeds/pricing_demo.rb`): três lojas (1 nota, 2 notas, 3 notas), dois produtos, preços e quantidades variados — para exercitar `GET /products/:id/prices` (incluindo loja com **só 1 NFC-e** = sem preço).
+In **development**, `bin/rails db:seed` loads **`Seeds::PricingDemo`** (`db/seeds/pricing_demo.rb`): três lojas com observações de preço, dois produtos canónicos — para exercitar `GET /products/:id/prices` e listas/ranking.
 
 - **Pular:** `SKIP_PRICING_DEMO_SEEDS=1 bin/rails db:seed`
 - **Forçar em outro ambiente:** `SEED_PRICING_DEMO=1 bin/rails db:seed`
@@ -68,6 +68,22 @@ Para testar só parser + heurística sem LLM: `PRODUCT_NORMALIZATION_LLM_ENABLED
 ## Dev helper scripts (`script/`)
 
 Run from the **repo root** with the API container up (`docker compose up -d`). Commands assume service name `api` as in this project’s `docker-compose.yml`.
+
+```bash
+docker compose exec -T api bash script/e2e_api_smoke.sh
+```
+
+### `script/smoke_endpoints_one_by_one.ps1` (Windows)
+
+Testa os mesmos fluxos **a partir do PowerShell no PC**, com JSON enviado por ficheiro temporário (evita **400 ParseError** ao usar `curl -d "{...}"` com escapes partidos).
+
+```powershell
+cd backend\api
+.\script\smoke_endpoints_one_by_one.ps1
+# opcional: -BaseUrl "http://IP:3000"
+```
+
+Requer **`curl.exe`** no PATH (Windows 10+ inclui) e a API a responder em `http://127.0.0.1:3000`.
 
 ### `script/fetch_nfce_smoke.rb`
 
@@ -138,7 +154,7 @@ docker compose run --rm api bin/rails db:reset
 docker compose up -d
 ```
 
-**PowerShell:** prefer **single-quoted** URLs when passing them to `docker compose exec` so `|` and JSON-style escaping don’t break. For multi-line commands, end each line with the PowerShell continuation backtick (see the `process_nfce_url_dev` example above).
+**PowerShell:** prefer **single-quoted** URLs when passing them to `docker compose exec` so `|` and JSON-style escaping don’t break. For multi-line commands, end each line with the PowerShell continuation backtick (see the `process_nfce_url_dev` example above). Para testar todos os endpoints HTTP com JSON correcto no Windows, use **`backend/api/script/smoke_endpoints_one_by_one.ps1`**.
 
 ## Tests
 

@@ -21,7 +21,7 @@ Content-Type: application/json
 
 3. Guardar o token de forma segura no dispositivo (Preferences / SecureStorage). Em `401`, limpar token e voltar ao ecrã de login.
 
----
+**Windows (testes manuais com curl):** se `POST /auth/login` responder **400** com erro de parse de JSON, o corpo partiu-se nos escapes do PowerShell. Usar `Invoke-RestMethod`/`ConvertTo-Json`, ou o script `backend/api/script/smoke_endpoints_one_by_one.ps1`, que envia JSON por ficheiro temporário.
 
 ## Lista completa de endpoints e respostas
 
