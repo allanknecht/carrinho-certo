@@ -17,7 +17,7 @@ carrinho-certo/
 
 ## Backend (Rails API)
 
-- **HTTP API** — auth (`POST /users`, `POST /auth/login`, `DELETE /account`), receipt submission (`POST /receipts`), product catalog (`GET /products`), prices and outliers (`GET /products/:id/prices`), shopping lists and items, store rankings for a list (`GET /shopping_lists/:id/store_rankings`). There is no per-user receipt list/detail API by design (aggregate pricing focus).
+- **HTTP API** — auth (`POST /users`, `POST /auth/login`, `DELETE /account`), receipt submission (`POST /receipts`), product catalog (`GET /products`), prices (`GET /products/:id/prices`), shopping lists and items, store rankings for a list (`GET /shopping_lists/:id/store_rankings`). There is no per-user receipt list/detail API by design (aggregate pricing focus).
 - **Background work** — `ProcessReceiptJob` (Active Job): fetches NFC-e consultation URL, parses XML/HTML, writes `stores`, `receipts`, `receipt_items_raw`, normalization pipeline. In development, jobs use `queue_adapter = :async` inside the API process; production should use a persistent queue (e.g. Solid Queue).
 - **Shared code** — models, services, and jobs live in the same Rails app (no separate worker repository).
 

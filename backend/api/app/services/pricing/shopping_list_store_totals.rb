@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 module Pricing
-  # Ranks stores for a shopping list using the same rules as ProductPricesSummary:
-  # rolling 30-day window (from today) and ≥2 distinct receipts per store per product
-  # before a unit price is used for that line at that store.
+  # Ranks stores for a shopping list using the latest observed unit price per store per product
+  # (by receipt emission date on observed_prices.observed_on, then updated_at).
   class ShoppingListStoreTotals
     def self.call(shopping_list: nil, product_lines: nil)
       new(shopping_list: shopping_list, product_lines: product_lines).call
@@ -16,11 +15,9 @@ module Pricing
 
     def call
       line_rows = build_line_rows
-      start_on = ProductPricesSummary::PRICE_WINDOW_DAYS.days.ago.to_date
-      end_on = Date.current
 
       product_ids = line_rows.filter_map { |r| r[:product_canonical_id] }.uniq
-      price_index, store_ids = build_price_index_and_stores(product_ids, start_on, end_on)
+      price_index, store_ids = build_price_index_and_stores(product_ids)
       stores_by_id = Store.where(id: store_ids).index_by(&:id)
       lines_total = line_rows.size
       lines_with_product = line_rows.count { |r| r[:product_canonical_id].present? }
@@ -40,11 +37,6 @@ module Pricing
 
       {
         shopping_list_id: @shopping_list&.id,
-        period_days: ProductPricesSummary::PRICE_WINDOW_DAYS,
-        window: { from: start_on.iso8601, to: end_on.iso8601 },
-        pricing_criteria: {
-          min_distinct_receipts_per_store_per_product: ProductPricesSummary::MIN_DISTINCT_RECEIPTS_PER_STORE
-        },
         lines: {
           total: lines_total,
           with_product: lines_with_product,
@@ -79,41 +71,24 @@ module Pricing
     end
 
     # Returns [ { store_id => { product_id => BigDecimal or nil } }, [store_id, ...] ]
-    def build_price_index_and_stores(product_ids, start_on, end_on)
+    def build_price_index_and_stores(product_ids)
       return [{}, []] if product_ids.empty?
 
-      observations = ObservedPrice
-        .includes(:store, receipt_item_raw: :receipt)
-        .where(product_canonical_id: product_ids)
-        .where(observed_on: start_on..end_on)
-        .to_a
-
-      by_store_product = observations.group_by { |o| [o.store_id, o.product_canonical_id] }
+      observations = ObservedPrice.latest_rows_per_store_for_products(product_ids).includes(:store, receipt_item_raw: :receipt).to_a
 
       index = {}
       store_ids = []
 
-      by_store_product.each do |(store_id, product_id), rows|
+      observations.each do |op|
+        store_id = op.store_id
         next if store_id.nil?
 
         store_ids << store_id
         index[store_id] ||= {}
-        index[store_id][product_id] = latest_disclosed_unit(rows)
+        index[store_id][op.product_canonical_id] = unit_price(op)
       end
 
       [index, store_ids.uniq.sort]
-    end
-
-    def latest_disclosed_unit(rows)
-      return nil unless store_meets_threshold?(rows)
-
-      sorted = rows.sort_by { |o| [o.observed_on, o.updated_at] }.reverse
-      latest = sorted.first
-      unit_price(latest)
-    end
-
-    def store_meets_threshold?(rows)
-      rows.map { |o| o.receipt_item_raw.receipt_id }.uniq.size >= ProductPricesSummary::MIN_DISTINCT_RECEIPTS_PER_STORE
     end
 
     def unit_price(op)

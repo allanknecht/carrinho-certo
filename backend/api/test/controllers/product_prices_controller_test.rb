@@ -53,11 +53,11 @@ class ProductPricesControllerTest < ActionDispatch::IntegrationTest
     body = JSON.parse(response.body)
     assert_equal pc.id, body["product"]["id"]
     assert_equal "No API", body["product"]["display_name"]
-    assert_equal 30, body["period_days"]
-    assert_equal false, body["prices_disclosed"]
-    assert_nil body["relevant_price"]
     assert_equal 1, body["stores"].size
-    assert_equal false, body["stores"].first["prices_disclosed"]
-    assert_equal [], body["stores"].first["recent_prices"]
+    s = body["stores"].first
+    assert_equal "5.50", s["unit_price"]
+    assert_equal Date.current.iso8601, s["observed_on"]
+    refute body.key?("relevant_price")
+    refute body.key?("price_outlier")
   end
 end

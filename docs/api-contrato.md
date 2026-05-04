@@ -195,9 +195,9 @@ Requires `Authorization: Bearer <token>`.
 
 - **`:id`** — `products_canonical.id` (same catalog the app uses after normalization).
 
-Only observations with `observed_on` in the **last 30 calendar days** (inclusive, ending today) are considered. Per store, prices are disclosed only when there are **at least two distinct NFC-e** (receipts) for that product **within that window**.
+For each **store** that has any `observed_prices` row for this product, the API returns **one** row: the observation with the **latest** `observed_on` (NFC-e **issue date** on the receipt), then `updated_at` as a tie-breaker. There is **no** rolling date window and **no** minimum number of receipts per store.
 
-Observations come from `observed_prices` (no receipt or line ids in the response).
+`observed_on` in the JSON is that emission date (ISO 8601 **date**). Values are taken from `observed_prices` (no receipt or line ids in the response).
 
 **Response `200`**
 
@@ -208,69 +208,24 @@ Observations come from `observed_prices` (no receipt or line ids in the response
     "display_name": "Sprite Lata 350 ml",
     "normalized_key": "SPRITE LATA 350 ML"
   },
-  "period_days": 30,
-  "window": { "from": "2026-02-27", "to": "2026-03-29" },
-  "observations_count": 4,
-  "receipts_distinct_count": 3,
-  "prices_disclosed": true,
-  "relevant_price": {
-    "unit_price": "7.00",
-    "unidade": "UN",
-    "quantidade": "1",
-    "line_total": "7.00",
-    "receipt_total": "31.78",
-    "observed_on": "2026-03-29",
-    "store_id": 1,
-    "basis": "latest_among_verified_stores"
-  },
   "stores": [
     {
       "store_id": 1,
       "nome": "MIX COMERCIO DE SOVETES LTDA ME",
       "cnpj": "26266835000181",
-      "observations_count": 3,
-      "receipts_distinct_at_store": 3,
-      "prices_disclosed": true,
-      "last_observed_on": "2026-03-29",
-      "recent_prices": [
-        {
-          "unit_price": "7.00",
-          "unidade": "UN",
-          "quantidade": "1",
-          "line_total": "7.00",
-          "receipt_total": "31.78",
-          "observed_on": "2026-03-29"
-        },
-        {
-          "unit_price": "65.90",
-          "unidade": "KG",
-          "quantidade": "0.376",
-          "line_total": "24.78",
-          "receipt_total": "31.78",
-          "observed_on": "2026-03-28"
-        },
-        {
-          "unit_price": "6.50",
-          "unidade": "UN",
-          "quantidade": "1",
-          "line_total": "6.50",
-          "receipt_total": "30.00",
-          "observed_on": "2026-03-27"
-        }
-      ]
+      "observed_on": "2026-03-29",
+      "unit_price": "7.00",
+      "unidade": "UN",
+      "quantidade": "1",
+      "line_total": "7.00",
+      "receipt_total": "31.78"
     }
   ]
 }
 ```
 
-- **`period_days`**: always **30** (fixed rolling window).
-- **`receipts_distinct_count`**: distinct NFC-e receipts for this product in that window (**all stores**). A store can still hide prices until it has its own minimum (below).
-- **`prices_disclosed`**: `true` if **at least one store** has **`receipts_distinct_at_store` ≥ 2** for this product **within the window** (prices are then shown for those stores only).
-- **`relevant_price`**: latest observation among **only stores that meet the per-store minimum** (≥ 2 distinct receipts for this product at that store **in the window**). `null` if no store qualifies. **`basis`** is `latest_among_verified_stores`.
-- **`stores`**: one row per `store_id` seen in the window.
-  - **`receipts_distinct_at_store`**: how many different receipts at that store include this product **in the window**.
-  - **`prices_disclosed`**: `true` only when **`receipts_distinct_at_store` ≥ 2**; then **`recent_prices`** has up to **3** entries (most recent first, then two older). If `false`, **`recent_prices`** is `[]` (no unit/total leaked for a lone receipt at that store).
-  - **`observations_count`** / **`last_observed_on`**: all observations at that store, even when prices are hidden.
+- **`stores`**: one object per distinct `store_id`; sorted by most recent **`observed_on`** (then `updated_at`) descending.
+- **`unit_price`** / **`line_total`**: from the chosen observation; **`receipt_total`** is the whole receipt total for context (string with two decimals when present).
 
 **Response `404`** — unknown product id:
 
@@ -404,22 +359,13 @@ All routes below require `Authorization: Bearer <token>`. Lists and items are **
 
 `GET /shopping_lists/:id/store_rankings`
 
-Returns stores observed for **any** product on the list within the price window, with **estimated_total** and per-store coverage. Pricing rules match **`GET /products/:id/prices`** (`ProductPricesSummary`):
-
-- Only observations with **`observed_on`** in the **last 30 calendar days** (inclusive, ending today).
-- For each **store** and **product**, a unit price counts only if that store has **≥ 2 distinct receipts** (NFC-e) for that product in that window.
-- When the threshold is met, the **latest** observation (by `observed_on`, then `updated_at`) supplies the unit price (same derivation as product prices).
+Returns stores that have at least one **latest** price observation for **any** list product, with **estimated_total** and per-store coverage. For each **store** and **product**, the unit price is taken from the same rule as **`GET /products/:id/prices`**: the observation with the greatest **`observed_on`** (receipt issue date), then **`updated_at`**, over **all** time (no rolling window, no minimum receipt count).
 
 **Response `200`**
 
 ```json
 {
   "shopping_list_id": 3,
-  "period_days": 30,
-  "window": { "from": "2026-03-12", "to": "2026-04-11" },
-  "pricing_criteria": {
-    "min_distinct_receipts_per_store_per_product": 2
-  },
   "lines": {
     "total": 5,
     "with_product": 4,
@@ -439,10 +385,10 @@ Returns stores observed for **any** product on the list within the price window,
 ```
 
 - **`lines.without_product`:** lines with no `product_canonical_id`; they count as **missing at every store**.
-- **`estimated_total`:** sum of *(unit price × list line `quantidade`)* for lines with a disclosed price at that store; two decimal places as a string.
-- **`lines_covered`:** product lines priced at this store in the window.
+- **`estimated_total`:** sum of *(unit price × list line `quantidade`)* for lines with a price at that store; two decimal places as a string.
+- **`lines_covered`:** product lines priced at this store.
 - **`lines_missing_price`:** `without_product` plus product lines without a usable price here.
-- **`stores`:** sorted by **`estimated_total`** ascending, then **`store_id`**. Includes every store that has at least one observation in the window for **some** list product (may still show **`estimated_total` `"0.00"`** if no line meets the threshold).
+- **`stores`:** sorted by **`estimated_total`** ascending, then **`store_id`**. Includes every store that has at least one observation for **some** list product (may still show **`estimated_total` `"0.00"`** if no line has a price at that store).
 
 **Response `404`** — list missing or not owned:
 

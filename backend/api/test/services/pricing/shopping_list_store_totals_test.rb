@@ -63,7 +63,7 @@ module Pricing
       pc&.destroy
     end
 
-    test "excludes store until two distinct receipts for that product" do
+    test "includes store with single receipt for that product" do
       user = users(:one)
       store = Store.create!(cnpj: "33333333000181", nome: "Uma nota")
       pc = ProductCanonical.create!(normalized_key: "SLST2 #{SecureRandom.hex(4)}", display_name: "Prod")
@@ -96,9 +96,9 @@ module Pricing
 
       out = ShoppingListStoreTotals.call(product_lines: [{ product_canonical_id: pc.id, quantidade: 1 }])
       s = out[:stores].find { |row| row[:store_id] == store.id }
-      assert_equal "0.00", s[:estimated_total]
-      assert_equal 0, s[:lines_covered]
-      assert_equal 1, s[:lines_missing_price]
+      assert_equal "3.00", s[:estimated_total]
+      assert_equal 1, s[:lines_covered]
+      assert_equal 0, s[:lines_missing_price]
     ensure
       ObservedPrice.where(product_canonical_id: pc.id).delete_all if pc
       ReceiptItemRaw.where(product_canonical_id: pc.id).delete_all if pc

@@ -5,7 +5,7 @@
 #   bin/rails runner script/product_prices_smoke.rb 1
 #   bin/rails runner script/product_prices_smoke.rb 1 7
 #
-# Args: product_canonical_id (window is fixed at 30 days in ProductPricesSummary).
+# Args: product_canonical_id (último preço por loja pela data de emissão no cupom).
 
 id = ARGV[0]
 abort "usage: bin/rails runner script/product_prices_smoke.rb <product_canonical_id>" if id.blank?

@@ -1,6 +1,6 @@
 # Carrinho Certo
 
-Users scan the NFC-e QR code; the system ingests the receipt, normalizes products and prices, and suggests where to shop. Includes shopping lists, per-store pricing with history, and account deletion (LGPD).
+Users scan the NFC-e QR code; the system ingests the receipt, normalizes products and prices, and suggests where to shop. Includes shopping lists, per-store pricing, and account deletion (LGPD).
 
 ## Repository layout
 
@@ -24,7 +24,8 @@ API base URL: **http://localhost:3000** — see [docs/app-desenvolvimento.md](do
 
 | Document | Content |
 |----------|---------|
-| [docs/app-desenvolvimento.md](docs/app-desenvolvimento.md) | **(PT)** Integração do app MAUI com a API: Docker, rede, endpoints. |
+| [docs/app-desenvolvimento.md](docs/app-desenvolvimento.md) | **(PT)** Docker, rede, MAUI ↔ API. |
+| [docs/frontend-guia-api-e-ordem.md](docs/frontend-guia-api-e-ordem.md) | **(PT)** Endpoints, JSON, ordem de implementação (equipa front). |
 | [docs/estrutura-repositorio.md](docs/estrutura-repositorio.md) | Monorepo structure. |
 | [docs/schema-banco.md](docs/schema-banco.md) | Tables, LGPD, pipeline. |
 | [docs/api-contrato.md](docs/api-contrato.md) | **HTTP contract (English).** |
