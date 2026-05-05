@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CarrinhoCerto.Pages.ScanPage"
+             Title="ScanPage">
+    <Grid>
+        <BoxView Color="Black" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <Grid Padding="20,50,20,0" VerticalOptions="Start">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <HorizontalStackLayout Margin="38, -20, 0, 30" HorizontalOptions="Start">
+                
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped" />
+                </HorizontalStackLayout.GestureRecognizers>
+                
+                <Label Text="←"
+                       TextColor="#fff"
+                       FontFamily="PoppinsBlack"
+                       FontSize="30"
+                       VerticalOptions="Center"
+                       Margin="0,-7,0,0"/>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <Image Source="areaqr.png" 
+               WidthRequest="250" 
+               HeightRequest="250" 
+               HorizontalOptions="Center" 
+               VerticalOptions="Center"
+               Margin="0,0,0,150"/>
+
+        <Border VerticalOptions="End" 
+                BackgroundColor="White" 
+                Padding="20,30,20,40" 
+                StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20,20,0,0" />
+            </Border.StrokeShape>
+
+            <VerticalStackLayout Spacing="20">
+                <Label Text="Mira a câmera no quadrado cheio de rabisco da nota." 
+                       TextColor="#374151" 
+                       FontFamily="PoppinsRegular"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       FontSize="12"/>
+
+                <Button Text="SCANEIA AÍ" 
+                        BackgroundColor="#E50914" 
+                        TextColor="#fef035" 
+                        FontFamily="PoppinsBlack"
+                        CornerRadius="10" 
+                        HeightRequest="55"
+                        FontSize="25"/>
+
+                <Label Text="QR Code tá zuado? Clique aqui para digitar os numerozinhos." 
+                       TextColor="#6B7280" 
+                       FontFamily="PoppinsBold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       FontSize="10">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDigitarNumerosTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

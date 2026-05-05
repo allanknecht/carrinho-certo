@@ -10,8 +10,7 @@ public partial class HomePage : ContentPage
     private async void OnEnviarNotaTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
-
-        // await Navigation.PushAsync(new ScanPage());
+        this.Window.Page = new ScanPage();
     }
 
     private async void OnMinhasListasTapped(object sender, TappedEventArgs e)
