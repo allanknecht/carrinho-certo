@@ -2,11 +2,87 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CarrinhoCerto.Pages.Scan.QrNumbersPage"
-             Title="QrNumbersPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="QrNumbersPage"
+             BackgroundColor="#F2F2F2"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="5"
+                             Padding="30"
+                             VerticalOptions="Center">
+
+            <HorizontalStackLayout Margin="0, -20, 0, 30" HorizontalOptions="Start">
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnVoltarTapped" />
+            </HorizontalStackLayout.GestureRecognizers>
+            <Label Text="←"
+                   TextColor="#E80000"
+                   FontFamily="PoppinsBlack"
+                   FontSize="30"
+                   VerticalOptions="Center"
+                   Margin="0,-7,0,0"/>
+
+            <Label Text="VOLTAR"
+                   TextColor="#616161"
+                   FontFamily="PoppinsBold"
+                   FontSize="16"
+                   VerticalOptions="Center"
+                   />
+            </HorizontalStackLayout>
+
+            <Label Text="DEU RUIM NO SCANNER?"
+                   TextColor="#E80000"
+                   FontSize="22"
+                   FontFamily="PoppinsBlack"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,20" />
+
+            <Label Text="Bora sofrer digitando esse monte de número..."
+                   TextColor="#616161"
+                   FontFamily="PoppinsRegular"
+                   FontSize="12"
+                   Margin="0,-30,0,10"
+                   HorizontalOptions="Center"/>
+
+            <Border Stroke="#E5E7EB"
+                    StrokeThickness="1"
+                    BackgroundColor="White"
+                    HeightRequest="50"
+                    Margin="0,0,0,20">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8"/>
+                </Border.StrokeShape>
+
+                <Grid ColumnDefinitions="50, *">
+                    <Image Source="qrcode.svg"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           HorizontalOptions="Center"
+                          VerticalOptions="Center"/>
+
+                    <Entry Grid.Column="1"
+                           Placeholder="Números do QR"
+                           Keyboard="Numeric"
+                           TextColor="#616161"
+                           BackgroundColor="Transparent"
+                           FontFamily="PoppinsRegular"
+                           HeightRequest="70"/>
+                </Grid>
+            </Border>
+
+            <Button Text="ENVIAR" 
+                    BackgroundColor="#E80000"
+                    TextColor="#fef035"
+                    FontAttributes="Bold"
+                    FontSize="25"
+                    CornerRadius="10"
+                    HeightRequest="55"
+                    Margin="0,10,0,20"
+                    Clicked="OnEnviarClicked"
+                    FontFamily="PoppinsBlack"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

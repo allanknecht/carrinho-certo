@@ -1,11 +1,12 @@
-namespace CarrinhoCerto.Pages;
+namespace CarrinhoCerto.Pages.Account;
 
-public partial class PosScanPage : ContentPage
+public partial class SuccessPage : ContentPage
 {
-	public PosScanPage()
+	public SuccessPage()
 	{
 		InitializeComponent();
 	}
+
     private void OnVoltarClicked(object sender, EventArgs e)
     {
         this.Window.Page = new TabNav();

@@ -65,6 +65,12 @@
 	  <MauiXaml Update="Pages\Account\ChangePasswordPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\Account\SuccessPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\List\CreateList.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\List\EditListPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

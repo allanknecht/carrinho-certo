@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CarrinhoCerto.Pages.Account.SuccessPage"
+             Title="SuccessPage"
+             BackgroundColor="#F2F2F2"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False">
+    
+    <ScrollView>
+        <VerticalStackLayout Spacing="5"
+                         Padding="30"
+                         VerticalOptions="Center">
+
+            <Image Source="check.svg"
+               HeightRequest="120"
+               HorizontalOptions="Center"
+               Margin="0, 0, 0, 30"/>
+
+            <Label Text="MATOU A PAU!"
+               TextColor="#E80000"
+               FontSize="22"
+               FontFamily="PoppinsBlack"
+               HorizontalOptions="Center"
+               Margin="0,0,0,20" />
+
+            <Label Text="Agora é só voltar com tudo."
+               TextColor="#616161"
+               FontFamily="PoppinsRegular"
+               FontSize="12"
+               Margin="0,-30,0,10"
+               HorizontalOptions="Center"/>
+
+            <Button Text="VOLTAR" 
+                BackgroundColor="#E80000"
+                TextColor="#fef035"
+                FontAttributes="Bold"
+                FontSize="25"
+                CornerRadius="10"
+                HeightRequest="55"
+                Margin="0,10,0,20"
+                Clicked="OnVoltarClicked"
+                FontFamily="PoppinsBlack"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
