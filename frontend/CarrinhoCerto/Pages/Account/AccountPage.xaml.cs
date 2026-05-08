@@ -1,4 +1,7 @@
+using CarrinhoCerto.Pages.Account;
+
 namespace CarrinhoCerto.Pages;
+
 
 public partial class AccountPage : ContentPage
 {
@@ -6,6 +9,16 @@ public partial class AccountPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+    private void OnAlterarSenhaTapped(object sender, TappedEventArgs e)
+    {
+        this.Window.Page = new ChangePasswordPage();
+    }
+
+    private void OnNotificacoesTapped(object sender, TappedEventArgs e)
+    {
+        this.Window.Page = new NotificationsPage();
+    }
 
     private void OnSairContaTapped(object sender, TappedEventArgs e)
     {

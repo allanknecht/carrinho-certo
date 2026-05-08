@@ -50,14 +50,15 @@
                        VerticalOptions="Center"
                        FontSize="12"/>
 
-                <Button Text="SCANEIA AÍ" 
+                <Button x:Name="btScanner" Text="SCANEIA AÍ" 
                         BackgroundColor="#E50914" 
                         TextColor="#fef035" 
                         FontFamily="PoppinsBlack"
                         CornerRadius="10" 
                         HeightRequest="55"
-                        FontSize="25"/>
-
+                        FontSize="25"
+                        Clicked="OnScanenrClicked"/>
+                
                 <Label Text="QR Code tá zuado? Clique aqui para digitar os numerozinhos." 
                        TextColor="#6B7280" 
                        FontFamily="PoppinsBold"

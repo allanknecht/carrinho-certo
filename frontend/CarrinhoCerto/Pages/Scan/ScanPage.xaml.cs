@@ -1,3 +1,5 @@
+using CarrinhoCerto.Pages.Scan;
+
 namespace CarrinhoCerto.Pages;
 
 public partial class ScanPage : ContentPage
@@ -14,6 +16,11 @@ public partial class ScanPage : ContentPage
 
     private void OnDigitarNumerosTapped(object sender, TappedEventArgs e)
     {
-        // this.Window.Page = new xxxxPage();
+        this.Window.Page = new QrNumbersPage();
+    }
+
+    private void OnScanenrClicked(object sender, EventArgs e)
+    {
+        this.Window.Page = new PosScanPage();
     }
 }
