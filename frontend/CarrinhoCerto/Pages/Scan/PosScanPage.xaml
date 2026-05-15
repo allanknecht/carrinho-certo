@@ -17,7 +17,7 @@
                    HorizontalOptions="Center"
                    Margin="0, 0, 0, 30"/>
 
-            <Label Text="MATOU A PAU!"
+            <Label Text="ARREBENTOU!"
                    TextColor="#E80000"
                    FontSize="22"
                    FontFamily="PoppinsBlack"
