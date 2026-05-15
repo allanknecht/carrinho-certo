@@ -1,7 +1,7 @@
 using CarrinhoCerto.Pages.Account;
 using CarrinhoCerto.Pages;
 
-namespace CarrinhoCerto.Pages;
+namespace CarrinhoCerto.Pages.Account;
 
 public partial class NotificationsPage : ContentPage
 {

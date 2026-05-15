@@ -1,4 +1,4 @@
-namespace CarrinhoCerto.Pages;
+namespace CarrinhoCerto.Pages.List;
 
 public partial class EditListPage : ContentPage
 {
