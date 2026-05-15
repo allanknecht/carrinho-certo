@@ -1,3 +1,6 @@
+using CarrinhoCerto.Pages;
+using CarrinhoCerto.Pages.List;
+
 namespace CarrinhoCerto.Pages;
 
 public partial class ListsPage : ContentPage
@@ -10,6 +13,7 @@ public partial class ListsPage : ContentPage
     private async void OnCriarListTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
+        this.Window.Page = new EditListPage();
     }
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)

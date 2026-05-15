@@ -1,0 +1,8 @@
+﻿{FRONTEND} To-Do List:
+[] Tela de criar lista
+[] Tela de editar lista
+[] Tela do mercado
+[] Tela do produto
+[] Configurar abertura de camera na tela de scan
+[] Configurar leitura de QR code
+[] Configurar endpoints com back em Ruby
