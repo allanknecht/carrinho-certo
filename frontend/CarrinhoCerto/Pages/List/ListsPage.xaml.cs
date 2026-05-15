@@ -13,7 +13,12 @@ public partial class ListsPage : ContentPage
     private async void OnCriarListTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
-        this.Window.Page = new EditListPage();
+        this.Window.Page = new CreateList();
+    }
+
+    private void OnBorderTapped(object sender, EventArgs e)
+    {
+        this.Window.Page = new CreateList();
     }
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)
