@@ -1,9 +1,8 @@
 ﻿{FRONTEND} To-Do List:
 [x] Tela de criar lista
 [x] Tela de editar lista
-[ ] Tela do produto
-[ ] Tela do mercado
-[ ] Botão de voltar nativo funcionar
-[ ] Configurar abertura de camera na tela de scan
+[x] Tela do produto
+[x] Configurar abertura de camera na tela de scan
 [ ] Configurar leitura de QR code
 [ ] Configurar endpoints com back em Ruby
+[ ] Botão de voltar nativo funcionar

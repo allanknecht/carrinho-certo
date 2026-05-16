@@ -6,4 +6,9 @@ public partial class SearchPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	private void OnProductTapped(object sender, TappedEventArgs e)
+	{
+		this.Window.Page = new ProductPage();
+    }
 }

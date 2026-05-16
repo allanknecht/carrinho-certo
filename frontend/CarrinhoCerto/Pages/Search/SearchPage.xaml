@@ -57,6 +57,11 @@
                 <VerticalStackLayout Spacing="15">
 
                     <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProductTapped" />
+                        </Border.GestureRecognizers>
+
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="12" />
                         </Border.StrokeShape>
@@ -91,6 +96,7 @@
 
                             <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto, *" Margin="10,10,0,0">
                                 <Border BackgroundColor="#E80000" StrokeThickness="0" Padding="8,4" VerticalOptions="Center">
+                                    
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="4" />
                                     </Border.StrokeShape>
@@ -133,6 +139,11 @@
                     </Border>
 
                     <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProductTapped" />
+                        </Border.GestureRecognizers>
+
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="12" />
                         </Border.StrokeShape>
