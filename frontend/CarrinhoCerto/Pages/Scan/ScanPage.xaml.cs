@@ -1,5 +1,7 @@
 using CarrinhoCerto.Pages.Scan;
-using ZXing.Net.Maui; 
+using ZXing;
+using ZXing.Net.Maui;
+using ZXing.Net.Maui.Readers;
 
 namespace CarrinhoCerto.Pages.Scan;
 
@@ -9,30 +11,29 @@ public partial class ScanPage : ContentPage
     {
         InitializeComponent();
 
-        CameraScanner.Options = new BarcodeReaderOptions
+        CameraScanner.Options = new ZXing.Net.Maui.BarcodeReaderOptions
         {
-            Formats = BarcodeFormats.TwoDimensional,
+            Formats = ZXing.Net.Maui.BarcodeFormat.QrCode,
             AutoRotate = true,
-            Multiple = false
+            Multiple = true
         };
     }
 
-    private void OnBarcodesDetected(object sender, BarcodeDetectionEventArgs e)
+    private void OnBarcodesDetected(object sender, ZXing.Net.Maui.BarcodeDetectionEventArgs e)
     {
-        var result = e.Results?.FirstOrDefault();
-        if (result != null)
-        {
-            CameraScanner.IsDetecting = false;
+        var primeiro = e.Results?.FirstOrDefault();
 
-            Dispatcher.Dispatch(() =>
-            {
-                string qrCodeLido = result.Value;
-                this.Window.Page = new PosScanPage();
-            });
-        }
+        if (primeiro is null)
+            return;
+
+        //debug
+        Dispatcher.DispatchAsync(async () =>
+        {
+            await DisplayAlert("QR Code Detectado", $"Valor: {primeiro.Value}", "OK");
+        });
     }
 
-    private void OnBackTapped(object sender, EventArgs e)
+    private void OnBackTapped(object sender, EventArgs e)   
     {
         this.Window.Page = new TabNav();
     }
