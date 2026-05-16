@@ -1,3 +1,5 @@
+using CarrinhoCerto.Pages.Scan;
+
 namespace CarrinhoCerto.Pages;
 
 public partial class HomePage : ContentPage

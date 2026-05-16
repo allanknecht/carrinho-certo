@@ -25,7 +25,7 @@
                            FontFamily="PoppinsRegular"/>
 
                     <Label x:Name="lbUser"
-                           Text="Usuário"
+                           Text="Chefia"
                            TextColor="#616161"
                            FontSize="22"
                            FontFamily="PoppinsBold"
@@ -35,6 +35,11 @@
                 <Border BackgroundColor="#E80000"
                         StrokeThickness="0"
                         HeightRequest="160">
+
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEnviarNotaTapped"/>
+                    </Border.GestureRecognizers>
+                    
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="20" />
                     </Border.StrokeShape>
@@ -45,33 +50,29 @@
                             Opacity="0"
                             HorizontalOptions="Start" 
                             VerticalOptions="Start" />
-                        
+
                         <VerticalStackLayout HorizontalOptions="Center"
                                          VerticalOptions="Center"
                                          Spacing="10">
-                        
-                        <Image Source="qrcode.svg"
+
+                            <Image Source="qrcode.svg"
                                WidthRequest="45"
                                HeightRequest="45"
                                HorizontalOptions="Center"/>
-                        
-                        <Label Text="ENVIAR NOTA FISCAL"
+
+                            <Label Text="ENVIAR NOTA FISCAL"
                                TextColor="#FEF035"
                                FontFamily="PoppinsBlack"
                                FontSize="25"
                                HorizontalOptions="Center"/>
-                        
-                        <Label Text="Mostra pra turma onde tá barato de verdade"
+
+                            <Label Text="Mostra pra turma onde tá barato de verdade"
                                TextColor="White"
                                FontFamily="PoppinsRegular"
                                FontSize="12"
                                HorizontalOptions="Center"
                                Margin="0,-20,0,0"/>
-                    </VerticalStackLayout>
-
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnEnviarNotaTapped"/>
-                        </Border.GestureRecognizers>
+                        </VerticalStackLayout>
                     </Grid>
                 </Border>
 

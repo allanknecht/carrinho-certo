@@ -1,3 +1,5 @@
+using CarrinhoCerto.Pages.Account;
+
 namespace CarrinhoCerto.Pages;
 
 public partial class ProductPage : ContentPage
@@ -6,4 +8,20 @@ public partial class ProductPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	 private void OnAddToListClicked(object sender, EventArgs e)
+	{
+		this.Window.Page = new SuccessPage();
+    }
+
+    private void OnBackClicked(object sender, EventArgs e)
+    {
+        var mainTab = new TabNav();
+        mainTab.CurrentPage = mainTab.Children[2];
+
+        if (Application.Current != null)
+        {
+            Application.Current.MainPage = mainTab;
+        }
+    }
 }
