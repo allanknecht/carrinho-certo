@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.Maui.Controls"
+             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
              x:Class="CarrinhoCerto.Pages.Scan.ScanPage"
              Title="ScanPage">
     <Grid>
-        <zxing:CameraBarcodeReaderView x:Name="CameraScanner"
-                                       HorizontalOptions="Fill"
-                                       VerticalOptions="Fill"
-                                       IsDetecting="True"
-                                       BarcodesDetected="OnBarcodesDetected" />
+        <zxing:CameraBarcodeReaderView x:Name="CameraScanner" BarcodesDetected="OnBarcodesDetected"/>
 
         <Grid Padding="20,50,20,0" VerticalOptions="Start">
             <Grid.ColumnDefinitions>
