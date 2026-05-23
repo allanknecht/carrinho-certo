@@ -1,4 +1,5 @@
 using CarrinhoCerto.Pages.Scan;
+using CarrinhoCerto.Pages.Account;
 using ZXing;
 using ZXing.Net.Maui;
 using ZXing.Net.Maui.Readers;
@@ -27,9 +28,9 @@ public partial class ScanPage : ContentPage
             return;
 
         //debug
-        Dispatcher.DispatchAsync(async () =>
+        Dispatcher.DispatchAsync(() =>
         {
-            await DisplayAlert("QR Code Detectado", $"Valor: {primeiro.Value}", "OK");
+            this.Window.Page = new PosScanPage();
         });
     }
 
