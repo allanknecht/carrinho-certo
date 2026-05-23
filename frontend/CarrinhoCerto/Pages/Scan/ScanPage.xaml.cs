@@ -46,6 +46,6 @@ public partial class ScanPage : ContentPage
 
     private void OnScanenrClicked(object sender, EventArgs e)
     {
-        this.Window.Page = new PosScanPage();
+        this.Window.Page = new QrNumbersPage();
     }
 }

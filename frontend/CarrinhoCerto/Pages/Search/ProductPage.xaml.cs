@@ -1,13 +1,15 @@
 using CarrinhoCerto.Pages.Account;
+using CarrinhoCerto.ViewModels;
 
 namespace CarrinhoCerto.Pages;
 
 public partial class ProductPage : ContentPage
 {
-	public ProductPage()
+	public ProductPage(int productId)
 	{
 		InitializeComponent();
-	}
+        BindingContext = new ProductViewModel(productId);
+    }
 
 	 private void OnAddToListClicked(object sender, EventArgs e)
 	{
