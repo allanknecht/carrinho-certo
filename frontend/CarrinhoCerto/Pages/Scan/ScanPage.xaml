@@ -51,8 +51,8 @@
                        VerticalOptions="Center"
                        FontSize="12"/>
 
-                <Button x:Name="btScanner" Text="SCANEIA AÍ" 
-                        BackgroundColor="#E50914" 
+                <Button x:Name="btScanner" Text="DIGITAR QR" 
+                        BackgroundColor="#E50914"
                         TextColor="#fef035" 
                         FontFamily="PoppinsBlack"
                         CornerRadius="10" 

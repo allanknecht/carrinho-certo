@@ -1,8 +1,7 @@
-﻿{FRONTEND} To-Do List:
-[x] Tela de criar lista
-[x] Tela de editar lista
-[x] Tela do produto
-[x] Configurar abertura de camera na tela de scan
-[x] Configurar leitura de QR code
-[ ] Botão de voltar nativo
+﻿{FRONTEND} STILL To-Do List:
 [ ] Configurar endpoints com back em Ruby e redirecionamentos
+[ ] Configurar login somente se existir cadastro
+[ ] Ajustar a funcionalidade de criar lista
+[ ] Ajustar a funcionalidade de editar senha
+[ ] Ajustar a funcionalidade de notificação
+[ ] Botão de voltar nativo
