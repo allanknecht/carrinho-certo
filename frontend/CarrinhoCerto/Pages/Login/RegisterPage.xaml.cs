@@ -1,4 +1,5 @@
 using CarrinhoCerto.Services;
+using Microsoft.Maui.Controls;
 
 namespace CarrinhoCerto.Pages;
 
@@ -33,9 +34,15 @@ public partial class RegisterPage : ContentPage
 
         if (isSuccess)
         {
-            await DisplayAlert("Sucesso", "Cadastro realizado com sucesso!", "OK");
-            await Task.Delay(3000);
-            this.Window.Page = new LoginPage();
+            await DisplayAlert("Sucesso", "Cadastro realizado com sucesso! Faça o login.", "OK");
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (Application.Current?.Windows.Count > 0)
+                {
+                    Application.Current.Windows[0].Page = new LoginPage();
+                }
+            });
         }
         else
         {
@@ -45,6 +52,12 @@ public partial class RegisterPage : ContentPage
 
     private void OnVoltarTapped(object sender, TappedEventArgs e)
     {
-        this.Window.Page = new LoginPage();
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (Application.Current?.Windows.Count > 0)
+            {
+                Application.Current.Windows[0].Page = new LoginPage();
+            }
+        });
     }
 }

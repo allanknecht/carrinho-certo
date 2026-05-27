@@ -24,15 +24,22 @@
                         <RoundRectangle CornerRadius="8"/>
                     </Border.StrokeShape>
                     <Grid ColumnDefinitions="50, *">
-                        <Image Source="search2" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+
+                        <Image Source="search2" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding PerformSearchCommand}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+
                         <Entry Grid.Column="1" 
                                Placeholder="Fala aí..." 
-                               Text="{Binding SearchQuery}"
+                               Text="{Binding SearchQuery, Mode=TwoWay}"
                                ReturnCommand="{Binding PerformSearchCommand}"
                                Keyboard="Default" 
                                TextColor="#616161" 
                                BackgroundColor="Transparent" 
-                               FontFamily="PoppinsRegular" />
+                               FontFamily="PoppinsRegular"
+                               HeightRequest="40"/>
                     </Grid>
                 </Border>
 
@@ -40,6 +47,7 @@
                     <HorizontalStackLayout Spacing="10">
                         <Button Text="Todos" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
                         <Button Text="Mercadão do Zé" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
+                        <Button Text="Mercearia da Esquina" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
                         <Button Text="Hiper Mercado" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
                     </HorizontalStackLayout>
                 </ScrollView>
@@ -51,7 +59,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:ProductItemViewModel">
 
-                        <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15" Margin="0,0,0,15">
+                        <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" Padding="15" Margin="0,10,0,15">
 
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer 
@@ -82,7 +90,7 @@
 
                                     <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
                                         <Label Text="{Binding BestPrice.UnitPrice, StringFormat='R$ {0}'}" FontFamily="PoppinsBold" FontSize="18" TextColor="#111827" HorizontalOptions="End"/>
-                                        <Label Text="{Binding BestPrice.Nome, StringFormat='no {0}'}" FontFamily="PoppinsRegular" FontSize="10" TextColor="#616161" HorizontalOptions="End" Margin="0,-7,0,0"/>
+                                        <Label Text="{Binding BestPrice.Nome, StringFormat='no {0}'}" FontFamily="PoppinsRegular" FontSize="10" TextColor="#616161" HorizontalOptions="End" Margin="0,-7,0,0" HorizontalTextAlignment="End"/>
                                     </VerticalStackLayout>
                                 </Grid>
 

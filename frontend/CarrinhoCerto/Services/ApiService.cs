@@ -7,7 +7,7 @@ namespace CarrinhoCerto.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://192.168.3.14:3000";
+    private const string BaseUrl = "http://10.255.126.192:3000";
 
     public ApiService()
     {
@@ -111,19 +111,27 @@ public class ApiService
 
     public async Task<(bool IsSuccess, string Message)> SendReceiptUrlAsync(string urlParams)
     {
-        await SetAuthHeaderAsync();
-        var request = new { source_url = urlParams };
-        var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/receipts", request);
-
-        if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+        try
         {
-            return (true, "Nota recebida; os preços podem demorar alguns segundos a aparecer.");
-        }
-        else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
-        {
-            return (false, "Esta nota já foi registada anteriormente.");
-        }
+            await SetAuthHeaderAsync();
+            var request = new { source_url = urlParams };
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/receipts", request);
 
-        return (false, "Erro ao enviar a nota.");
+            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+            {
+                return (true, "Nota recebida; os preços podem demorar alguns segundos a aparecer.");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return (false, "Esta nota já foi registada anteriormente.");
+            }
+
+            var conteudoErro = await response.Content.ReadAsStringAsync();
+            return (false, $"Erro do Servidor ({(int)response.StatusCode}): {conteudoErro}");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Erro interno do App: {ex.Message}");
+        }
     }
 }

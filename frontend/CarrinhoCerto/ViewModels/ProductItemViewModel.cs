@@ -11,7 +11,7 @@ public class ProductItemViewModel : INotifyPropertyChanged
     private readonly ApiService _apiService;
     public Product Product { get; }
 
-    public string Emoji => "🛍️";
+    public string Emoji => "📦";
 
     private StorePrice _bestPrice;
     public StorePrice BestPrice

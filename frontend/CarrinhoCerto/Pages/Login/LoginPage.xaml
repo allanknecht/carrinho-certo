@@ -37,7 +37,8 @@
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
                     
-                    <Entry Grid.Column="1"
+                    <Entry x:Name="EmailEntry"
+                           Grid.Column="1"
                            Placeholder="seu@email.com"
                            Keyboard="Email"
                            TextColor="#616161"
@@ -69,7 +70,8 @@
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
                     
-                    <Entry Grid.Column="1"
+                    <Entry x:Name ="PasswordEntry"
+                           Grid.Column="1"
                            Placeholder="••••••••"
                            IsPassword="True"
                            TextColor="#616161"
