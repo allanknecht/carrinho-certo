@@ -1,4 +1,5 @@
 ﻿using CarrinhoCerto.Pages;
+using Microsoft.Maui.Storage;
 
 namespace CarrinhoCerto
 {
@@ -6,6 +7,7 @@ namespace CarrinhoCerto
     {
         const int WindowWidth = 400;
         const int WindowHeight = 750;
+
         public App()
         {
             InitializeComponent();
@@ -13,7 +15,6 @@ namespace CarrinhoCerto
             Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
             {
 #if WINDOWS
-
                 var mauiWindow = handler.VirtualView;
                 var nativeWindow = handler.PlatformView;
                 nativeWindow.Activate();
@@ -27,7 +28,26 @@ namespace CarrinhoCerto
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new LoginPage());
+            var window = new Window(new LoginPage());
+            CheckLoginStatusAsync(window);
+            return window;
+        }
+
+        private async void CheckLoginStatusAsync(Window window)
+        {
+            try
+            {
+                var token = await SecureStorage.Default.GetAsync("auth_token");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    window.Page = new TabNav();
+                }
+            }
+            catch (Exception)
+            {
+                window.Page = new LoginPage();
+            }
         }
     }
 }

@@ -1,14 +1,18 @@
 using CarrinhoCerto.Pages.Account;
+using CarrinhoCerto.Services;
+using Microsoft.Maui.Controls;
 
 namespace CarrinhoCerto.Pages;
 
-
 public partial class AccountPage : ContentPage
 {
-	public AccountPage()
-	{
-		InitializeComponent();
-	}
+    private readonly ApiService _apiService;
+
+    public AccountPage()
+    {
+        InitializeComponent();
+        _apiService = new ApiService();
+    }
 
     private void OnAlterarSenhaTapped(object sender, TappedEventArgs e)
     {
@@ -20,10 +24,19 @@ public partial class AccountPage : ContentPage
         this.Window.Page = new NotificationsPage();
     }
 
-    private void OnSairContaTapped(object sender, TappedEventArgs e)
+    private async void OnSairContaTapped(object sender, TappedEventArgs e)
     {
-        _ = AnimarRipple(RippleEnviar, (View)sender, e);
-        this.Window.Page = new LoginPage();
+        await AnimarRipple(RippleEnviar, (View)sender, e);
+
+        _apiService.Logout();
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (Application.Current?.Windows.Count > 0)
+            {
+                Application.Current.Windows[0].Page = new LoginPage();
+            }
+        });
     }
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)

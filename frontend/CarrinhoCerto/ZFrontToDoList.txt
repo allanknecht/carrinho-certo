@@ -1,6 +1,6 @@
 ﻿{FRONTEND} STILL To-Do List:
 [ ] Configurar endpoints com back em Ruby e redirecionamentos
-[ ] Configurar login somente se existir cadastro
+[ ] Fazer o login funcionar, logar somente se tem cadastro e manter logado no app
 [ ] Ajustar a funcionalidade de criar lista
 [ ] Ajustar a funcionalidade de editar senha
 [ ] Ajustar a funcionalidade de notificação
