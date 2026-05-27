@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using CarrinhoCerto.Models;
 using CarrinhoCerto.Services;
@@ -10,14 +12,22 @@ namespace CarrinhoCerto.ViewModels;
 public class SearchViewModel : INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
+    private CancellationTokenSource _searchCancellationToken;
 
     public ObservableCollection<ProductItemViewModel> Products { get; } = new();
+
+    public ObservableCollection<StoreFilter> StoreFilters { get; } = new();
 
     private string _searchQuery;
     public string SearchQuery
     {
         get => _searchQuery;
-        set { _searchQuery = value; OnPropertyChanged(nameof(SearchQuery)); }
+        set
+        {
+            _searchQuery = value;
+            OnPropertyChanged(nameof(SearchQuery));
+            LiveSearchAsync();
+        }
     }
 
     private bool _isLoading;
@@ -36,7 +46,31 @@ public class SearchViewModel : INotifyPropertyChanged
         PerformSearchCommand = new Command(async () => await SearchProductsAsync());
         GoToProductCommand = new Command<int>(async (productId) => await GoToProductAsync(productId));
 
+        StoreFilters.Add(new StoreFilter { Name = "Todos", IsSelected = true });
+        StoreFilters.Add(new StoreFilter { Name = "Mercadões", IsSelected = false });
+        StoreFilters.Add(new StoreFilter { Name = "Hiper Mercado", IsSelected = false });
+
         _ = SearchProductsAsync();
+    }
+
+    private async void LiveSearchAsync()
+    {
+        _searchCancellationToken?.Cancel();
+        _searchCancellationToken = new CancellationTokenSource();
+        var token = _searchCancellationToken.Token;
+
+        try
+        {
+            await Task.Delay(500, token);
+
+            if (!token.IsCancellationRequested)
+            {
+                await SearchProductsAsync();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 
     private async Task SearchProductsAsync()
@@ -62,4 +96,16 @@ public class SearchViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+}
+
+public class StoreFilter : INotifyPropertyChanged
+{
+    public string Name { get; set; }
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { _isSelected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected))); }
+    }
+    public event PropertyChangedEventHandler PropertyChanged;
 }
