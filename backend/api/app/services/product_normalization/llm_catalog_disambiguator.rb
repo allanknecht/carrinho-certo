@@ -47,7 +47,9 @@ module ProductNormalization
         model: cfg.model,
         api_key: cfg.api_key,
         open_timeout: cfg.open_timeout,
-        read_timeout: cfg.read_timeout
+        read_timeout: cfg.read_timeout,
+        http_referer: cfg.http_referer,
+        app_name: cfg.app_name,
       )
 
       lines = @candidates.map { |c| %(id=#{c.id} normalized_key="#{c.normalized_key}" display_name="#{c.display_name}") }

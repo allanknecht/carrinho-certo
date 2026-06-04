@@ -57,6 +57,6 @@ Recomenda-se tratar os itens pendentes conforme a prioridade do projeto e a nece
 - **Receipts:** `POST /receipts` accepts flat JSON `{ "source_url": "..." }`, returns `202` with `queued`; `409` if access key from URL already exists.
 - **Job:** `ProcessReceiptJob` fetches URL, runs `NfceConsultationParser` (NF-e XML + HTML, including SVRS QrCode layout), persists `stores`, `receipts`, `receipt_items_raw`; statuses `queued` → `processing` → `done` / `failed`.
 - **DB:** `users`, `stores`, `receipts`, `receipt_items_raw`, `products_canonical`, `product_aliases` (see [schema-banco.md](schema-banco.md)).
-- **Normalization:** `ProductNormalization::TextNormalizer` + `AssignCanonical` after each parsed line; optional **local LLM** via OpenAI-compatible API (Ollama, env `PRODUCT_NORMALIZATION_LLM_ENABLED`); aliases merge variants (`source`: manual / `llm` / heuristic `new_canonical`).
+- **Normalization:** `ProductNormalization::TextNormalizer` + `AssignCanonical` after each parsed line; optional **LLM via OpenRouter** (OpenAI-compatible API, env `PRODUCT_NORMALIZATION_LLM_ENABLED` + `OPENROUTER_API_KEY`); aliases merge variants (`source`: manual / `llm` / heuristic `new_canonical`).
 
 **Not implemented yet:** `prices` table and product price API, shopping list endpoints. **Receipt listing/detail** is intentionally omitted from the API (collective data contribution model).

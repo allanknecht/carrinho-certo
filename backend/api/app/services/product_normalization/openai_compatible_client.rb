@@ -5,17 +5,19 @@ require "json"
 require "uri"
 
 module ProductNormalization
-  # Minimal OpenAI Chat Completions client (works with Ollama at /v1/chat/completions).
+  # Minimal OpenAI Chat Completions client (OpenRouter, OpenAI, etc.).
   class OpenaiCompatibleClient
     class Error < StandardError; end
     class HttpError < Error; end
 
-    def initialize(base_url:, model:, api_key: "ollama", open_timeout: 5, read_timeout: 90)
+    def initialize(base_url:, model:, api_key: "", open_timeout: 10, read_timeout: 60, http_referer: nil, app_name: nil)
       @base_url = base_url.to_s.sub(%r{/+\z}, "")
       @model = model
       @api_key = api_key
       @open_timeout = open_timeout
       @read_timeout = read_timeout
+      @http_referer = http_referer
+      @app_name = app_name
     end
 
     def chat_completion(messages)
@@ -27,7 +29,9 @@ module ProductNormalization
 
       req = Net::HTTP::Post.new(uri.request_uri)
       req["Content-Type"] = "application/json"
-      req["Authorization"] = "Bearer #{@api_key}"
+      req["Authorization"] = "Bearer #{@api_key}" if @api_key.present?
+      req["HTTP-Referer"] = @http_referer if @http_referer.present?
+      req["X-Title"] = @app_name if @app_name.present?
 
       body = {
         model: @model,

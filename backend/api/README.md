@@ -28,40 +28,42 @@ In **development**, `bin/rails db:seed` loads **`Seeds::PricingDemo`** (`db/seed
 
 Credenciais e ids são impressos no console. Testes: `bin/rails test test/integration/product_prices_demo_seeds_test.rb`.
 
-## Product normalization + local LLM (Ollama)
+## Product normalization + LLM (OpenRouter)
 
-Rule-based matching runs always (aliases + exact `normalized_key`). For **new** lines, you can send the description to a **local OpenAI-compatible** server (Ollama exposes `POST /v1/chat/completions`).
+Rule-based matching runs always (aliases + exact `normalized_key`). For **new** lines, you can send the description to **OpenRouter** (OpenAI-compatible API over HTTPS — no local server).
 
-1. Run Ollama and pull a model, e.g. `ollama pull llama3.2`
+1. Create a free API key at [openrouter.ai/keys](https://openrouter.ai/keys)
 2. Set environment variables for the API process:
 
 | Variable | Example | Meaning |
 |----------|---------|---------|
 | `PRODUCT_NORMALIZATION_LLM_ENABLED` | `true` | Turn on LLM for unseen products |
-| `OLLAMA_OPENAI_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible base (no trailing slash required) |
-| `OLLAMA_MODEL` | `llama3.2` | Model name in Ollama |
-| `OLLAMA_API_KEY` | `ollama` | Sent as `Authorization: Bearer`; Ollama usually ignores it |
-| `OLLAMA_READ_TIMEOUT` | `90` | Seconds (local models can be slow) |
+| `OPENROUTER_API_KEY` | `sk-or-...` | Required when LLM is enabled |
+| `OPENROUTER_MODEL` | `nvidia/nemotron-3-ultra-550b-a55b:free` | Model id on OpenRouter (free tier models end with `:free`) |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | Optional override (default is OpenRouter) |
+| `OPENROUTER_READ_TIMEOUT` | `60` | Seconds per request |
+| `OPENROUTER_HTTP_REFERER` | `https://github.com/...` | Optional; OpenRouter uses this for attribution |
+| `OPENROUTER_APP_NAME` | `Carrinho Certo` | Optional; sent as `X-Title` |
 
 If the LLM call errors or times out, the job **falls back** to the heuristic (same as before LLM). The first successful LLM mapping stores a `product_aliases` row (`source` `llm` or `llm_merge`) so identical POS text skips further model calls.
 
 **Two-step LLM (when enabled):** (1) propose `normalized_key` + `display_name` from the line; (2) if the catalog has **candidate** rows (token overlap + recent items), a second prompt asks the model to **merge** with one of those ids or create **new** — merges only count if the id was in the candidate list (no hallucinated ids).
 
-### Docker Compose (API no container, Ollama no PC)
+### Docker Compose
 
-From the repo root, `docker-compose.yml` passes through env vars. Create a `.env` next to it (or export in the shell) **before** `docker compose up`:
+From the repo root, create a `.env` next to `docker-compose.yml` (or export in the shell) **before** `docker compose up`:
 
 ```bash
 PRODUCT_NORMALIZATION_LLM_ENABLED=true
-OLLAMA_OPENAI_BASE_URL=http://host.docker.internal:11434/v1
-OLLAMA_MODEL=nome-exato-do-seu-modelo
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free
 ```
 
-Use `ollama list` on the host to copy the **exact** model tag (e.g. `llama3.2`, `qwen2.5:7b`). Inside the container, `localhost` is **not** your Windows Ollama — use `host.docker.internal` (Docker Desktop on Windows/Mac).
+Other free models: see [openrouter.ai/models](https://openrouter.ai/models) and filter by **Free**.
 
 ### Parece “travado” depois de importar a nota?
 
-Com `PRODUCT_NORMALIZATION_LLM_ENABLED=true`, o `NormalizeReceiptItemsJob` pode ficar **vários segundos ou minutos** em cada linha à espera do Ollama (`OLLAMA_READ_TIMEOUT`, até ~120s no Compose). Enquanto isso o recibo já pode estar `done`, mas a normalização ainda corre em background. Confira `log/development.log` por `[ProcessReceiptJob]` e `[NormalizeReceiptItemsJob]`.
+Com `PRODUCT_NORMALIZATION_LLM_ENABLED=true`, o `NormalizeReceiptItemsJob` faz até **2 chamadas HTTP por linha nova** (OpenRouter). Cada uma respeita `OPENROUTER_READ_TIMEOUT` (padrão 60s). Enquanto isso o recibo já pode estar `done`, mas a normalização ainda corre em background. Confira `log/development.log` por `[ProcessReceiptJob]` e `[NormalizeReceiptItemsJob]`.
 
 Para testar só parser + heurística sem LLM: `PRODUCT_NORMALIZATION_LLM_ENABLED=false` ou rode `bin/rails runner script/process_nfce_url_dev.rb '<url>'` (o script desliga a LLM por padrão; use `SMOKE_KEEP_LLM=1` se quiser manter).
 
@@ -98,7 +100,7 @@ docker compose exec -T api bin/rails runner script/fetch_nfce_smoke.rb 'https://
 End-to-end smoke on the **development** database: ensures a `User` exists, creates a `Receipt` (`queued`), runs `ProcessReceiptJob` and (with `:inline` adapter) `NormalizeReceiptItemsJob`, then prints line counts and `observed_prices`.
 
 - **Duplicate NFC-e:** if the 44-digit key is already stored, the script **exits with code 1** (same idea as `409` from `POST /receipts`). Clear the DB or delete that receipt before re-testing the same URL.
-- **LLM:** by default the script **turns LLM off** for a fast run. To use Ollama for this invocation:
+- **LLM:** by default the script **turns LLM off** for a fast run. To use OpenRouter for this invocation:
 
 ```bash
 docker compose exec -T \
