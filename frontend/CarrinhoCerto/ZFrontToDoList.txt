@@ -4,4 +4,5 @@
 [ ] Ajustar ao clicar no produto (tela do produto)
 [ ] Ajustar a funcionalidade de criar lista e colocar produtos na lista
 [ ] Ajustar a funcionalidade de editar senha
+[ ] Ajustar a funcionalidade de esqueci a minha senha
 [ ] Ajustar a funcionalidade de notificação
