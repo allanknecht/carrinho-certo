@@ -7,8 +7,7 @@
 # Requires a user. Set EMAIL=... PASSWORD=... or uses first User (create one if none).
 #
 # Por padrão desliga a LLM durante este script: com PRODUCT_NORMALIZATION_LLM_ENABLED=true
-# e Ollama lento/indisponível, cada item pode parecer “travado” por até OLLAMA_READ_TIMEOUT
-# segundos (vários minutos). Para forçar LLM aqui: SMOKE_KEEP_LLM=1
+# cada item faz até 2 chamadas ao OpenRouter (pode levar alguns segundos). Para forçar LLM aqui: SMOKE_KEEP_LLM=1
 
 $stdout.sync = true
 
@@ -48,7 +47,7 @@ prev_adapter = ActiveJob::Base.queue_adapter
 llm_was = Rails.application.config.product_normalization_llm.enabled
 if ENV["SMOKE_KEEP_LLM"] != "1" && llm_was
   Rails.application.config.product_normalization_llm.enabled = false
-  puts "[smoke] LLM desligada só neste run (SMOKE_KEEP_LLM=1 mantém). Sem isso, Ollama pode travar minutos por item."
+  puts "[smoke] LLM desligada só neste run (SMOKE_KEEP_LLM=1 mantém). Sem isso, cada item chama o OpenRouter."
 end
 
 ActiveJob::Base.queue_adapter = :inline

@@ -3,7 +3,7 @@
 require "json"
 
 module ProductNormalization
-  # Asks an OpenAI-compatible endpoint (Ollama) for a stable product key + display name.
+  # Asks an OpenAI-compatible endpoint (OpenRouter) for a stable product key + display name.
   class LlmCanonicalResolver
     class Error < StandardError; end
 
@@ -34,6 +34,8 @@ module ProductNormalization
         api_key: cfg.api_key,
         open_timeout: cfg.open_timeout,
         read_timeout: cfg.read_timeout,
+        http_referer: cfg.http_referer,
+        app_name: cfg.app_name,
       )
 
       raw = http.chat_completion(

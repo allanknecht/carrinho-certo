@@ -3,7 +3,7 @@
 module ProductNormalization
   # Resolves receipt_items_raw.product_canonical_id using aliases first, then exact
   # normalized_key on ProductCanonical. New products: optional OpenAI-compatible LLM
-  # (Ollama local) when enabled; otherwise creates a canonical from the text pipeline.
+  # (OpenRouter via web) when enabled; otherwise creates a canonical from the text pipeline.
   class AssignCanonical
     def self.call(receipt_item_raw)
       new(receipt_item_raw).call
