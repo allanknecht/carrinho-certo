@@ -7,7 +7,7 @@ namespace CarrinhoCerto.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://10.255.126.192:3000";
+    private const string BaseUrl = "http://192.168.4.3:3000";
 
     public ApiService()
     {

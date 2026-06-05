@@ -1,6 +1,5 @@
 ﻿{FRONTEND} STILL To-Do List:
 [ ] Criar a funcionalidade de digitar url do QR
-[ ] Fazer funcionar o produto scaneado aparecer na lista de busca
 [ ] Ajustar ao clicar no produto (tela do produto)
 [ ] Ajustar a funcionalidade de criar lista e colocar produtos na lista
 [ ] Ajustar a funcionalidade de editar senha
