@@ -18,7 +18,7 @@ class ProcessReceiptJob < ApplicationJob
 
     receipt.reload
     Rails.logger.info("[ProcessReceiptJob] receipt_id=#{receipt_id} fetching consultation URL…")
-    body = fetch_receipt_page(receipt)
+    body = fetch_receipt_page(receipt.source_url)
     Rails.logger.info("[ProcessReceiptJob] receipt_id=#{receipt_id} fetched #{body.bytesize} bytes, parsing…")
     parsed = NfceConsultationParser.call(body, source_url: receipt.source_url)
 
@@ -86,8 +86,10 @@ class ProcessReceiptJob < ApplicationJob
     )
   end
 
-  def fetch_receipt_page(receipt)
-    uri = URI.parse(receipt.source_url)
+def fetch_receipt_page(url, limit = 5)
+    raise "Muitos redirecionamentos (Loop da SEFAZ)" if limit == 0
+
+    uri = URI.parse(url)
     raise ArgumentError, "only http/https URLs are supported" unless uri.is_a?(URI::HTTP)
 
     http = Net::HTTP.new(uri.host, uri.port)
@@ -98,16 +100,27 @@ class ProcessReceiptJob < ApplicationJob
     path = uri.request_uri
     path = "/" if path.blank?
     request = Net::HTTP::Get.new(path)
-    request["User-Agent"] = "CarrinhoCerto/1.0"
+    
+    # faz com que o SEFAZ interprete o google chrome como um windows
+    request["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+    request["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 
     response = http.request(request)
-    code = response.code.to_i
-    raise "HTTP #{response.code}" unless code.between?(200, 299)
 
-    body = response.body.to_s
-    raise "empty response body" if body.blank?
-
-    body
+    case response
+    when Net::HTTPSuccess
+      body = response.body.to_s
+      raise "empty response body" if body.blank?
+      body
+    when Net::HTTPRedirection
+      location = response['location']
+      new_url = URI.join(url, location).to_s
+      Rails.logger.info("[ProcessReceiptJob] Redirecionado pela SEFAZ para: #{new_url}")
+      # recursao para seguir o link
+      fetch_receipt_page(new_url, limit - 1)
+    else
+      raise "HTTP #{response.code}"
+    end
   end
 
   def resolve_store(parsed)
