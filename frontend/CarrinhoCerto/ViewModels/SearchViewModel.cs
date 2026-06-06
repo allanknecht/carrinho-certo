@@ -90,7 +90,10 @@ public class SearchViewModel : INotifyPropertyChanged
 
     private async Task GoToProductAsync(int productId)
     {
-        await Application.Current.Windows[0].Page.Navigation.PushAsync(new Pages.ProductPage(productId));
+        if (Application.Current != null)
+        {
+            Application.Current.MainPage = new Pages.ProductPage(productId);
+        }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

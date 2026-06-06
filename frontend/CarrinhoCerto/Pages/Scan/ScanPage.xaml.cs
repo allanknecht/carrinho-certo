@@ -50,8 +50,7 @@ public partial class ScanPage : ContentPage
 
                 if (result.IsSuccess)
                 {
-                    await janelaPrincipal.DisplayAlert("Sucesso", "Nota enviada para a fila!", "OK");
-
+                    // await janelaPrincipal.DisplayAlert("Sucesso", "Nota enviada para a fila!", "OK");
                     Application.Current.Windows[0].Page = new PosScanPage();
                 }
                 else

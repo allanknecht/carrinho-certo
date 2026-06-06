@@ -62,9 +62,9 @@
                            HorizontalOptions="Center"
                           VerticalOptions="Center"/>
 
-                    <Entry Grid.Column="1"
-                           Placeholder="Números do QR"
-                           Keyboard="Numeric"
+                    <Entry x:Name="UrlEntry"
+                           Grid.Column="1"
+                           Placeholder="Cole a URL da nota aqui."
                            TextColor="#616161"
                            BackgroundColor="Transparent"
                            FontFamily="PoppinsRegular"
