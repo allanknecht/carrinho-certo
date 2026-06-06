@@ -16,7 +16,7 @@ public partial class CreateList : ContentPage
 
         if (Application.Current != null)
         {
-            Application.Current.MainPage = mainTab;
+            Application.Current.Windows[0].Page = mainTab;
         }
     }
 
@@ -27,7 +27,7 @@ public partial class CreateList : ContentPage
 
         if (Application.Current != null)
         {
-            Application.Current.MainPage = mainTab;
+            Application.Current.Windows[0].Page = mainTab;
         }
     }
 

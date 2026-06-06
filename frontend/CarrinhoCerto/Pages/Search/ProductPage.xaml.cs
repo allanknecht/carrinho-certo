@@ -23,7 +23,7 @@ public partial class ProductPage : ContentPage
 
         if (Application.Current != null)
         {
-            Application.Current.MainPage = mainTab;
+            Application.Current.Windows[0].Page = mainTab;
         }
     }
 }

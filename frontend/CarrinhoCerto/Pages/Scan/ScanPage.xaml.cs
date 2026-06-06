@@ -1,9 +1,10 @@
-using CarrinhoCerto.Pages.Scan;
-using CarrinhoCerto.Pages.Account;
-using ZXing;
-using ZXing.Net.Maui;
-using ZXing.Net.Maui.Readers;
+﻿using CarrinhoCerto.Pages.Account;
 using CarrinhoCerto.Services;
+using Microsoft.Maui.Storage;
+using Plugin.LocalNotification;
+using System;
+using System.Linq;
+using ZXing.Net.Maui;
 
 namespace CarrinhoCerto.Pages.Scan;
 
@@ -18,15 +19,15 @@ public partial class ScanPage : ContentPage
 
         _apiService = new ApiService();
 
-        CameraScanner.Options = new ZXing.Net.Maui.BarcodeReaderOptions
+        CameraScanner.Options = new BarcodeReaderOptions
         {
-            Formats = ZXing.Net.Maui.BarcodeFormat.QrCode,
+            Formats = BarcodeFormat.QrCode,
             AutoRotate = true,
             Multiple = false
         };
     }
 
-    private void OnBarcodesDetected(object sender, ZXing.Net.Maui.BarcodeDetectionEventArgs e)
+    private void OnBarcodesDetected(object sender, BarcodeDetectionEventArgs e)
     {
         if (_isProcessingScan) return;
 
@@ -50,7 +51,26 @@ public partial class ScanPage : ContentPage
 
                 if (result.IsSuccess)
                 {
-                    // await janelaPrincipal.DisplayAlert("Sucesso", "Nota enviada para a fila!", "OK");
+                    if (Preferences.Get("NotificarNotaConfirmada", true))
+                    {
+                        if (await LocalNotificationCenter.Current.AreNotificationsEnabled() == false)
+                        {
+                            await LocalNotificationCenter.Current.RequestNotificationPermission();
+                        }
+
+                        var request = new NotificationRequest
+                        {
+                            NotificationId = 101,
+                            Title = "NOTA ESCANEADA!",
+                            Subtitle = "Carrinho Certo",
+                            Description = "A sua nota fiscal bateu no sistema e os preços já foram atualizados.",
+                            BadgeNumber = 1,
+                            Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now.AddSeconds(2) }
+                        };
+                        
+                        await LocalNotificationCenter.Current.Show(request);
+                    }
+
                     Application.Current.Windows[0].Page = new PosScanPage();
                 }
                 else
@@ -62,14 +82,14 @@ public partial class ScanPage : ContentPage
             }
             catch (Exception ex)
             {
-                await Application.Current.Windows[0].Page.DisplayAlert("Erro de Liga��o", ex.Message, "OK");
+                await Application.Current.Windows[0].Page.DisplayAlert("Erro de Ligação", ex.Message, "OK");
                 _isProcessingScan = false;
                 CameraScanner.IsDetecting = true;
             }
         });
     }
 
-    private void OnBackTapped(object sender, EventArgs e)
+    private void OnBackTapped(object sender, TappedEventArgs e)
     {
         this.Window.Page = new TabNav();
     }

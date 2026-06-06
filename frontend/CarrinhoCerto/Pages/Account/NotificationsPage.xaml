@@ -80,16 +80,16 @@
             </Border>
 
             <Label Text="Nota confirmada"
-       FontAttributes="Bold"
-       TextColor="#616161"
-       Margin="5,20,0,0"
-       FontFamily="PoppinsBold"/>
+                   FontAttributes="Bold"
+                   TextColor="#616161"
+                   Margin="5,20,0,0"
+                   FontFamily="PoppinsBold"/>
 
             <Border Stroke="#E5E7EB"
-        StrokeThickness="1"
-        BackgroundColor="White"
-        HeightRequest="50"
-        Margin="0,0,0,20">
+                    StrokeThickness="1"
+                    BackgroundColor="White"
+                    HeightRequest="50"
+                    Margin="0,0,0,20">
 
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8"/>
@@ -97,32 +97,33 @@
 
                 <Grid ColumnDefinitions="50, *">
                     <CheckBox
-         HorizontalOptions="Center"
-         VerticalOptions="Center"
-         Color="#E80000"
+                        x:Name="NotaConfirmadaCheck"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Color="#E80000"
                         IsChecked="True"/>
 
                     <Label Text="Avisa quando a nota que cê enviou bater no sistema e se espalhar por aí."
-        Grid.Column="1"
-        FontSize="12"
-        TextColor="#616161"
-        BackgroundColor="Transparent"
-        FontFamily="PoppinsRegular"
-        HeightRequest="40"/>
+                            Grid.Column="1"
+                            FontSize="12"
+                            TextColor="#616161"
+                            BackgroundColor="Transparent"
+                            FontFamily="PoppinsRegular"
+                            HeightRequest="40"/>
                 </Grid>
             </Border>
 
             <Label Text="Promoções malucas"
-       FontAttributes="Bold"
-       TextColor="#616161"
-       Margin="5,20,0,0"
-       FontFamily="PoppinsBold"/>
+                   FontAttributes="Bold"
+                   TextColor="#616161"
+                   Margin="5,20,0,0"
+                   FontFamily="PoppinsBold"/>
 
             <Border Stroke="#E5E7EB"
-        StrokeThickness="1"
-        BackgroundColor="White"
-        HeightRequest="50"
-        Margin="0,0,0,20">
+                    StrokeThickness="1"
+                    BackgroundColor="White"
+                    HeightRequest="50"
+                    Margin="0,0,0,20">
 
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="8"/>
@@ -130,17 +131,17 @@
 
                 <Grid ColumnDefinitions="50, *">
                     <CheckBox
-         HorizontalOptions="Center"
-         VerticalOptions="Center"
-         Color="#E80000"/>
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Color="#E80000"/>
 
                     <Label Text="Ofertas cabulosas dos mercados parceiros que valem a corrida no fim de semana."
-        Grid.Column="1"
-        FontSize="12"
-        TextColor="#616161"
-        BackgroundColor="Transparent"
-        FontFamily="PoppinsRegular"
-        HeightRequest="40"/>
+                            Grid.Column="1"
+                            FontSize="12"
+                            TextColor="#616161"
+                            BackgroundColor="Transparent"
+                            FontFamily="PoppinsRegular"
+                            HeightRequest="40"/>
                 </Grid>
             </Border>
 
