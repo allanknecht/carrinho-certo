@@ -29,7 +29,7 @@
                            TextColor="#616161"
                            FontSize="22"
                            FontFamily="PoppinsBold"
-                           Margin="0,-10,0,0"/>
+                           Margin="0,-10,0,-21"/>
                 </VerticalStackLayout>
 
                 <Border BackgroundColor="#E80000"
@@ -76,7 +76,7 @@
                     </Grid>
                 </Border>
 
-                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,-10,0,0">
 
                     <Border Grid.Column="0"
                             BackgroundColor="White"
@@ -85,7 +85,7 @@
                             Padding="15">
                         
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="15" />
+                            <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
                         
                         <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
@@ -114,7 +114,7 @@
                             Padding="15">
                         
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="15" />
+                            <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
                         
                         <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
@@ -142,32 +142,38 @@
                            FontFamily="PoppinsBold"
                            FontSize="16" />
 
-                    <Border BackgroundColor="White"
-                            Stroke="#E0E0E0"
-                            StrokeThickness="1"
-                            Padding="15">
-                        
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="15" />
-                        </Border.StrokeShape>
-                        
-                        <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
-                            <Image Source="trenddown.svg"
-                                   WidthRequest="30" HeightRequest="30"
-                                   VerticalOptions="Center" />
+                    <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding TopDrops}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border BackgroundColor="White"
+                                        Stroke="#E0E0E0"
+                                        StrokeThickness="1"
+                                        Padding="15">
 
-                            <VerticalStackLayout VerticalOptions="Center" Spacing="0">
-                                <Label Text="Óleo de Soja (900ml)"
-                                       TextColor="#616161"
-                                       FontFamily="PoppinsBold" FontSize="14" />
-                                
-                                <Label Text="R$ 5,49 no Atacadão"
-                                       TextColor="#9E9E9E"
-                                       FontFamily="PoppinsRegular"
-                                       FontSize="12" />
-                            </VerticalStackLayout>
-                        </HorizontalStackLayout>
-                    </Border>
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="15" />
+                                    </Border.StrokeShape>
+
+                                    <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                                        <Image Source="trenddown.svg"
+                                               WidthRequest="30" HeightRequest="30"
+                                               VerticalOptions="Center" />
+
+                                        <VerticalStackLayout VerticalOptions="Center" Spacing="0">
+                                            <Label Text="{Binding ProductName}"
+                                                   TextColor="#616161"
+                                                   FontFamily="PoppinsBold" FontSize="14" />
+
+                                            <Label Text="{Binding PriceDescription}"
+                                                   TextColor="#9E9E9E"
+                                                   FontFamily="PoppinsRegular"
+                                                   FontSize="12" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
 
             </VerticalStackLayout>

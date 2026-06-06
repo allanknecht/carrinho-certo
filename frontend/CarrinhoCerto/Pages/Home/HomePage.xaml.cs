@@ -1,25 +1,62 @@
 using CarrinhoCerto.Pages.Scan;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace CarrinhoCerto.Pages;
 
+public class PriceDropItem
+{
+    public string ProductName { get; set; }
+    public string PriceDescription { get; set; }
+}
+
 public partial class HomePage : ContentPage
 {
-	public HomePage()
-	{
-		InitializeComponent();
-	}
+    public ObservableCollection<PriceDropItem> TopDrops { get; set; } = new();
+
+    public HomePage()
+    {
+        InitializeComponent();
+        BindingContext = this;
+        LoadTopDrops();
+    }
+
+    private void LoadTopDrops()
+    {
+        TopDrops.Add(new PriceDropItem
+        {
+            ProductName = "Óleo de Soja (900ml)",
+            PriceDescription = "R$ 5,49 no Atacadão"
+        });
+
+        TopDrops.Add(new PriceDropItem
+        {
+            ProductName = "Leite Integral Tirol (1L)",
+            PriceDescription = "R$ 3,99 no Zaffari"
+        });
+
+        TopDrops.Add(new PriceDropItem
+        {
+            ProductName = "Café Melitta (500g)",
+            PriceDescription = "R$ 14,90 no Maxxi"
+        });
+    }
 
     private async void OnEnviarNotaTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
-        this.Window.Page = new ScanPage();
+
+        if (Application.Current != null)
+        {
+            Application.Current.Windows[0].Page = new ScanPage();
+        }
     }
 
     private async void OnMinhasListasTapped(object sender, TappedEventArgs e)
     {
         await AnimarCorBotao((Border)sender, Color.FromArgb("#F3F4F6"));
 
-        if (Application.Current.MainPage is TabbedPage tabbedPage)
+        if (Application.Current?.Windows[0].Page is TabbedPage tabbedPage)
         {
             tabbedPage.CurrentPage = tabbedPage.Children[1];
         }
@@ -29,12 +66,11 @@ public partial class HomePage : ContentPage
     {
         await AnimarCorBotao((Border)sender, Color.FromArgb("#F3F4F6"));
 
-        if (Application.Current.MainPage is TabbedPage tabbedPage)
+        if (Application.Current?.Windows[0].Page is TabbedPage tabbedPage)
         {
             tabbedPage.CurrentPage = tabbedPage.Children[2];
         }
     }
-
 
     private async Task AnimarCorBotao(Border border, Color corDeClique)
     {
@@ -46,7 +82,7 @@ public partial class HomePage : ContentPage
         border.BackgroundColor = corOriginal;
     }
 
-private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)
+    private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)
     {
         var touchPos = e.GetPosition(container);
         if (touchPos == null) return;

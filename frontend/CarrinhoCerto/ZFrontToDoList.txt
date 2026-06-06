@@ -1,6 +1,3 @@
 ﻿{FRONTEND} STILL To-Do List:
 [ ] Ajustar a funcionalidade de criar lista e colocar produtos na lista
 [ ] Ajustar a função de adicionar na lista pelo próprio produto
-[ ] Ajustar a funcionalidade de editar senha
-[ ] Ajustar a funcionalidade de esqueci a minha senha
-[ ] Ajustar a funcionalidade de notificação

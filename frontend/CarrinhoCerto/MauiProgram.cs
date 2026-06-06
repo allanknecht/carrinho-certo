@@ -2,6 +2,7 @@
 using ZXing.Net.Maui.Controls;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using LiveChartsCore.SkiaSharpView.Maui;
+using Plugin.LocalNotification;
 
 namespace CarrinhoCerto;
 
@@ -12,6 +13,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+            .UseLocalNotification()
             .UseBarcodeReader()
             .UseSkiaSharp()
             .UseLiveCharts()
