@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CarrinhoCerto.Pages.ProductPage"
              Title="ProductPage"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              BackgroundColor="White">
 
     <Grid RowDefinitions="*, Auto" Padding="20">
@@ -63,10 +64,15 @@
                         <Label Text="Montanha-russa do preço" FontFamily="PoppinsBold" FontSize="14" TextColor="#111827"/>
                         <HorizontalStackLayout Spacing="10">
                             <Button Text="7 Dias" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="8" HeightRequest="30" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
-                            <Button Text="30 Dias" BackgroundColor="Transparent" TextColor="#616161" CornerRadius="8" HeightRequest="30" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
                         </HorizontalStackLayout>
-                        <Frame BackgroundColor="#F9FAFB" HeightRequest="120" HasShadow="False" CornerRadius="8" BorderColor="#E5E7EB">
-                            <Label Text="📊" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF" FontFamily="PoppinsRegular"/>
+                        <Frame BackgroundColor="#F9FAFB" HeightRequest="120" HasShadow="False" CornerRadius="8" BorderColor="#E5E7EB" Padding="0">
+                            <lvc:CartesianChart 
+                                BackgroundColor="Transparent"
+                                Series="{Binding PriceSeries}" 
+                                XAxes="{Binding XAxes}" 
+                                YAxes="{Binding YAxes}"
+                                TooltipPosition="Top"
+                                Margin="0,15,0,0"/>
                         </Frame>
                     </VerticalStackLayout>
                 </Border>

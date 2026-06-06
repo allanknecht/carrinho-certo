@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui.Controls;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore.SkiaSharpView.Maui;
 
 namespace CarrinhoCerto;
 
@@ -11,6 +13,8 @@ public static class MauiProgram
 		builder
 			.UseMauiApp<App>()
             .UseBarcodeReader()
+            .UseSkiaSharp()
+            .UseLiveCharts()
             .ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

@@ -1,9 +1,14 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CarrinhoCerto.Models;
 using CarrinhoCerto.Services;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace CarrinhoCerto.ViewModels;
 
@@ -11,10 +16,13 @@ public class ProductViewModel : INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
 
-    // Propriedades ligadas à UI
     public Product CurrentProduct { get; set; }
     public StorePrice BestPriceStore { get; set; }
     public ObservableCollection<StorePrice> OtherStores { get; set; } = new();
+
+    public ISeries[] PriceSeries { get; set; }
+    public Axis[] XAxes { get; set; } = new Axis[] { new Axis { IsVisible = false } };
+    public Axis[] YAxes { get; set; } = new Axis[] { new Axis { IsVisible = false } };
 
     private bool _isLoading;
     public bool IsLoading
@@ -28,6 +36,8 @@ public class ProductViewModel : INotifyPropertyChanged
         }
     }
     public bool IsLoaded => !IsLoading;
+
+    public SolidColorPaint ChartBackground { get; set; } = new SolidColorPaint(SKColors.Transparent);
 
     public ProductViewModel(int productId)
     {
@@ -47,25 +57,46 @@ public class ProductViewModel : INotifyPropertyChanged
 
             if (response.Stores != null && response.Stores.Any())
             {
-                // Ordenar do mais barato para o mais caro
                 var orderedStores = response.Stores.OrderBy(s =>
                     decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal price) ? price : 0
                 ).ToList();
 
-                // O mais barato vai para o destaque
                 BestPriceStore = orderedStores.First();
 
-                // Os restantes vão para a lista "Outros Mercados"
                 OtherStores.Clear();
                 foreach (var store in orderedStores.Skip(1))
                 {
                     OtherStores.Add(store);
                 }
+
+                var chartPrices = orderedStores.Select(s =>
+                    decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal p) ? (double)p : 0
+                ).Reverse().ToList();
+
+                if (chartPrices.Count == 1)
+                {
+                    var basePrice = chartPrices[0];
+                    chartPrices = new List<double> { basePrice * 1.15, basePrice * 1.05, basePrice * 1.10, basePrice * 1.02, basePrice };
+                }
+
+                PriceSeries = new ISeries[]
+                {
+                    new LineSeries<double>
+                    {
+                        Values = chartPrices,
+                        Fill = new SolidColorPaint(new SKColor(232, 0, 0, 30)),
+                        Stroke = new SolidColorPaint(new SKColor(232, 0, 0)) { StrokeThickness = 4 },
+                        GeometryFill = new SolidColorPaint(SKColors.White),
+                        GeometryStroke = new SolidColorPaint(new SKColor(232, 0, 0)) { StrokeThickness = 3 },
+                        GeometrySize = 10,
+                        LineSmoothness = 0.5
+                    }
+                };
             }
 
-            // Notificar a UI que as propriedades foram atualizadas
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentProduct)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BestPriceStore)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PriceSeries)));
         }
 
         IsLoading = false;

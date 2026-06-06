@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:CarrinhoCerto.ViewModels"
              x:Class="CarrinhoCerto.Pages.SearchPage"
+             x:Name="MinhaSearchPage"
              BackgroundColor="#F2F2F2"
              Title="SearchPage">
 
@@ -63,7 +64,7 @@
 
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer 
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=GoToProductCommand}"
+                                    Command="{Binding BindingContext.GoToProductCommand, Source={x:Reference MinhaSearchPage}}"
                                     CommandParameter="{Binding Product.Id}"/>
                             </Border.GestureRecognizers>
 
@@ -98,8 +99,6 @@
                                     <Label Text="{Binding ReferencePrice.Nome, StringFormat='Pra ter ideia: {0}'}" FontFamily="PoppinsRegular" FontSize="10" TextColor="#616161" VerticalOptions="Center"/>
                                     <Label Grid.Column="1" Text="{Binding ReferencePrice.UnitPrice, StringFormat='R$ {0}'}" FontSize="14" FontFamily="PoppinsBold" TextColor="#9CA3AF" VerticalOptions="Center"/>
                                 </Grid>
-
-                                <ActivityIndicator Grid.Row="2" Grid.Column="1" IsRunning="True" IsVisible="{Binding HasPrices, Converter={StaticResource InvertedBoolConverter}}" HorizontalOptions="End" VerticalOptions="Center" HeightRequest="20" WidthRequest="20" Color="#E5E7EB"/>
 
                             </Grid>
                         </Border>
