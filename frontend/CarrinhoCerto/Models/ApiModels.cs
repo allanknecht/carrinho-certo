@@ -80,11 +80,18 @@ public class ListItem
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
+    [JsonPropertyName("quantidade")]
+    public string? QuantidadeRaw { get; set; }
+
+    [JsonPropertyName("product_canonical_id")]
+    public int? ProductId { get; set; }
+
+    public string DisplayNameFinal => !string.IsNullOrEmpty(ProductName) ? ProductName : $"Produto #{ProductId}";
+
     [JsonPropertyName("product_name")]
     public string? ProductName { get; set; }
 
-    [JsonPropertyName("quantity")]
-    public int Quantity { get; set; }
+    public string QuantityFinal => !string.IsNullOrEmpty(QuantidadeRaw) ? $"Qtd: {QuantidadeRaw}" : "Qtd: 1";
 }
 
 public class MarketPriceSummary
@@ -92,8 +99,18 @@ public class MarketPriceSummary
     [JsonPropertyName("market_name")]
     public string? MarketName { get; set; }
 
+    [JsonPropertyName("nome")]
+    public string? Nome { get; set; }
+
+    public string NomeFinal => !string.IsNullOrEmpty(MarketName) ? MarketName : (Nome ?? "Mercado");
+
     [JsonPropertyName("total_price")]
     public decimal TotalPrice { get; set; }
+
+    [JsonPropertyName("total")]
+    public decimal Total { get; set; }
+
+    public decimal TotalFinal => TotalPrice > 0 ? TotalPrice : Total;
 }
 
 public class ListDetailsResponse
@@ -109,4 +126,27 @@ public class ListDetailsResponse
 
     [JsonPropertyName("top_markets")]
     public List<MarketPriceSummary>? TopMarkets { get; set; }
+
+    public bool HasBestMarket => BestMarket != null;
+    public bool HasNoBestMarket => BestMarket == null;
+}
+
+public class RankingLines
+{
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
+    [JsonPropertyName("with_product")]
+    public int WithProduct { get; set; }
+}
+
+public class RankingResponse
+{
+    [JsonPropertyName("shopping_list_id")]
+    public int ListId { get; set; }
+
+    [JsonPropertyName("lines")]
+    public RankingLines? Lines { get; set; }
+
+    [JsonPropertyName("stores")]
+    public List<MarketPriceSummary>? Stores { get; set; }
 }

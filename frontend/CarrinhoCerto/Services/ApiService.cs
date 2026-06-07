@@ -142,16 +142,19 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[JSON DAS LISTAS] {content}");
+                System.Diagnostics.Debug.WriteLine($"[JSON RECEBIDO] {content}");
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
                 var wrapper = JsonSerializer.Deserialize<ShoppingListsWrapper>(content, options);
-                return wrapper?.ShoppingLists ?? new List<ShoppingList>();
+                if (wrapper?.ShoppingLists != null) return wrapper.ShoppingLists;
+
+                return JsonSerializer.Deserialize<List<ShoppingList>>(content, options) ?? new List<ShoppingList>();
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ERRO AO LER LISTAS] {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ERRO FATAL API] {ex.Message}");
         }
         return new List<ShoppingList>();
     }
@@ -191,36 +194,53 @@ public class ApiService
         try
         {
             await SetAuthHeaderAsync();
-            var response = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}");
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            if (response.IsSuccessStatusCode)
+            var listResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}");
+            ShoppingList listInfo = null;
+            if (listResponse.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync();
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var content = await listResponse.Content.ReadAsStringAsync();
+                listInfo = JsonSerializer.Deserialize<ShoppingList>(content, options);
+            }
 
-                try
+            List<ListItem> items = new List<ListItem>();
+            var itemsResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/items");
+            if (itemsResponse.IsSuccessStatusCode)
+            {
+                var content = await itemsResponse.Content.ReadAsStringAsync();
+                var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.TryGetProperty("items", out var itemsElem))
                 {
-                    var fullResponse = JsonSerializer.Deserialize<ListDetailsResponse>(content, options);
-                    if (fullResponse?.ListInfo != null && !string.IsNullOrEmpty(fullResponse.ListInfo.Name))
-                        return fullResponse;
-                }
-                catch { }
-
-                var basicList = JsonSerializer.Deserialize<ShoppingList>(content, options);
-                if (basicList != null && basicList.Id != 0)
-                {
-                    return new ListDetailsResponse
-                    {
-                        ListInfo = basicList,
-                        Items = new List<ListItem>(),
-                        TopMarkets = new List<MarketPriceSummary>(),
-                        BestMarket = null
-                    };
+                    items = JsonSerializer.Deserialize<List<ListItem>>(itemsElem.GetRawText(), options);
                 }
             }
+
+            List<MarketPriceSummary> rankings = new List<MarketPriceSummary>();
+            var rankingResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/store_rankings");
+            if (rankingResponse.IsSuccessStatusCode)
+            {
+                var content = await rankingResponse.Content.ReadAsStringAsync();
+                var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.TryGetProperty("stores", out var storesElem))
+                {
+                    rankings = JsonSerializer.Deserialize<List<MarketPriceSummary>>(storesElem.GetRawText(), options);
+                }
+            }
+
+            return new ListDetailsResponse
+            {
+                ListInfo = listInfo ?? new ShoppingList { Name = "Minha Lista" },
+                Items = items ?? new List<ListItem>(),
+                BestMarket = rankings.FirstOrDefault(),
+                TopMarkets = rankings.Take(3).ToList()
+            };
         }
-        catch { }
-        return null;
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ERRO DETALHES] {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<bool> AddProductToListAsync(int listId, int productId, int quantity = 1)
@@ -229,14 +249,22 @@ public class ApiService
         {
             await SetAuthHeaderAsync();
 
-            var payload = new { shopping_list_item = new { product_id = productId, quantity = quantity } };
-            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+            var payload = new
+            {
+                product_canonical_id = productId,
+                quantidade = quantity.ToString()
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync($"{BaseUrl}/shopping_lists/{listId}/items", content);
+
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[ERRO AO ADICIONAR ITEM] {ex.Message}");
             return false;
         }
     }
@@ -253,6 +281,37 @@ public class ApiService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[ERRO AO EXCLUIR] {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateListNameAsync(int listId, string newName)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var payload = new { shopping_list = new { name = newName } };
+            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PatchAsync($"{BaseUrl}/shopping_lists/{listId}", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> RemoveListItemAsync(int listId, int itemId)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.DeleteAsync($"{BaseUrl}/shopping_lists/{listId}/items/{itemId}");
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
             return false;
         }
     }

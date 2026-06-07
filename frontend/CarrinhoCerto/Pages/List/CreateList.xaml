@@ -37,7 +37,7 @@
 
             <Line X1="0" Y1="0" X2="500" Y2="0" Stroke="#E80000" StrokeThickness="2" Margin="0,-10,0,0"/>
 
-            <Border BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1" Padding="15" Margin="0,10,0,15">
+            <Border IsVisible="{Binding ListData.HasBestMarket}" BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1" Padding="15" Margin="0,10,0,15">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
                 </Border.StrokeShape>
@@ -47,19 +47,27 @@
                         <Label Text="ONDE DÓI MENOS NO BOLSO" TextColor="#15803D" FontFamily="PoppinsBold" FontSize="10" VerticalOptions="Center" />
                     </HorizontalStackLayout>
 
-                    <Label Text="{Binding ListData.BestMarket.MarketName, TargetNullValue='Nenhum dado'}" 
+                    <Label Text="{Binding ListData.BestMarket.NomeFinal}" 
                            TextColor="#1E293B" FontFamily="PoppinsBlack" FontSize="14" Margin="0,-5,0,-6" />
 
                     <Label FontSize="10" Margin="0,0,0,0">
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="A facada gira em torno de: " TextColor="#64748B" FontFamily="PoppinsRegular" />
-                                <Span Text="{Binding ListData.BestMarket.TotalPrice, StringFormat='R$ {0:F2}', TargetNullValue='R$ 0,00'}" 
+                                <Span Text="{Binding ListData.BestMarket.TotalFinal, StringFormat='R$ {0:F2}'}" 
                                       TextColor="#15803D" FontFamily="PoppinsBold" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
                 </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding ListData.HasNoBestMarket}" BackgroundColor="#FFFBEB" Stroke="#FEF035" StrokeThickness="1" Padding="15" Margin="0,10,0,15">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Label Text="Adicione produtos para descobrirmos onde dói menos no bolso!" 
+                       TextColor="#D97706" FontFamily="PoppinsBold" FontSize="12" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
             </Border>
 
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding ListData.Items}" Spacing="10" Margin="0,0,0,15">
@@ -77,7 +85,7 @@
                             </Border.StrokeShape>
                             <Grid ColumnDefinitions="*, Auto">
                                 <VerticalStackLayout Grid.Column="0" Spacing="0">
-                                    <Label Text="{Binding ProductName}" TextColor="#616161" FontFamily="PoppinsBold" FontSize="14" Margin="0,0,0,0"/>
+                                    <Label Text="{Binding DisplayNameFinal}" TextColor="#616161" FontFamily="PoppinsBold" FontSize="14" Margin="0,0,0,0"/>
                                     <Label Text="{Binding Quantity, StringFormat='Qtd: {0}'}" TextColor="#64748B" FontFamily="PoppinsRegular" FontSize="10" Margin="0,-5,0,0"/>
                                 </VerticalStackLayout>
                                 <Image Source="trash.svg" Grid.Column="1" WidthRequest="20" HeightRequest="20" VerticalOptions="Start">
@@ -103,8 +111,8 @@
                             <DataTemplate>
                                 <VerticalStackLayout Spacing="8">
                                     <Grid ColumnDefinitions="*, Auto">
-                                        <Label Grid.Column="0" Text="{Binding MarketName}" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
-                                        <Label Grid.Column="1" Text="{Binding TotalPrice, StringFormat='R$ {0:F2}'}" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
+                                        <Label Grid.Column="0" Text="{Binding NomeFinal}" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
+                                        <Label Grid.Column="1" Text="{Binding TotalFinal, StringFormat='R$ {0:F2}'}" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
                                     </Grid>
                                     <Line X1="0" Y1="0" X2="500" Y2="0" Stroke="#E80000" StrokeThickness="1.5" Margin="0,0,0,0"/>
                                 </VerticalStackLayout>

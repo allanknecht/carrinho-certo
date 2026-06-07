@@ -18,30 +18,33 @@ public partial class ProductPage : ContentPage
 
     private async void OnAddToListClicked(object sender, EventArgs e)
     {
-        var lists = await _apiService.GetMyListsAsync();
+        var vm = BindingContext as ProductViewModel;
+        if (vm?.CurrentProduct == null) return;
 
-        if (lists == null || lists.Count == 0)
+        await SecureStorage.Default.SetAsync($"prod_name_{vm.CurrentProduct.Id}", vm.CurrentProduct.DisplayName);
+
+        var listas = await new ApiService().GetMyListsAsync();
+
+        if (listas == null || !listas.Any())
         {
-            await DisplayAlert("Aviso", "Você não tem nenhuma lista criada. Vá à aba de Listas e crie uma primeiro!", "OK");
+            await DisplayAlert("Aviso", "Você não tem nenhuma lista! Crie uma primeiro na aba de Listas.", "OK");
             return;
         }
 
-        var listNames = lists.Select(l => l.Name).ToArray();
-
-        var listaEscolhida = await DisplayActionSheet("Adicionar em qual lista?", "Cancelar", null, listNames);
+        var nomesDasListas = listas.Select(l => !string.IsNullOrEmpty(l.Name) ? l.Name : $"Lista #{l.Id}").ToArray();
+        var listaEscolhida = await DisplayActionSheet("Adicionar a qual lista?", "Cancelar", null, nomesDasListas);
 
         if (listaEscolhida != "Cancelar" && !string.IsNullOrEmpty(listaEscolhida))
         {
-            var selectedList = lists.FirstOrDefault(l => l.Name == listaEscolhida);
-            var vm = BindingContext as ProductViewModel;
+            var listaAlvo = listas.FirstOrDefault(l => l.Name == listaEscolhida || $"Lista #{l.Id}" == listaEscolhida);
 
-            if (selectedList != null && vm?.CurrentProduct != null)
+            if (listaAlvo != null)
             {
-                var sucesso = await _apiService.AddProductToListAsync(selectedList.Id, vm.CurrentProduct.Id);
+                bool sucesso = await new ApiService().AddProductToListAsync(listaAlvo.Id, vm.CurrentProduct.Id);
 
                 if (sucesso)
                 {
-                    await DisplayAlert("Boa!", $"{vm.CurrentProduct.DisplayName} foi atirado para a lista '{selectedList.Name}'!", "OK");
+                    await DisplayAlert("Boa!", "Produto jogado na lista com sucesso!", "OK");
                 }
                 else
                 {
@@ -49,6 +52,7 @@ public partial class ProductPage : ContentPage
                 }
             }
         }
+
     }
 
     private void OnBackClicked(object sender, EventArgs e)
