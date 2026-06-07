@@ -1,6 +1,7 @@
 using CarrinhoCerto.Models;
 using CarrinhoCerto.Services;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace CarrinhoCerto.Pages.List;
@@ -17,14 +18,8 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
         set
         {
             _listData = value;
-            OnPropertyChanged(nameof(ListData));
+            OnPropertyChanged();
         }
-    }
-
-    public CreateList()
-    {
-        InitializeComponent();
-        _apiService = new ApiService();
     }
 
     public CreateList(int listId)
@@ -33,115 +28,113 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
         _apiService = new ApiService();
         _listId = listId;
         BindingContext = this;
-
-        LoadListDetails();
     }
 
-    private async void LoadListDetails()
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await LoadListDetails();
+    }
+
+    private async Task LoadListDetails()
     {
         var data = await _apiService.GetListDetailsAsync(_listId);
 
-        if (data != null && data.ListInfo != null && !string.IsNullOrEmpty(data.ListInfo.Name))
+        if (data != null && data.ListInfo != null)
         {
             ListData = data;
-        }
-        else
-        {
-            var todasAsListas = await _apiService.GetMyListsAsync();
-            var minhaLista = todasAsListas?.FirstOrDefault(l => l.Id == _listId);
-
-            string nomeSeguro = minhaLista?.Name ?? $"Lista #{_listId}";
-
-            ListData = new ListDetailsResponse
-            {
-                ListInfo = new ShoppingList { Id = _listId, Name = nomeSeguro, ItemCount = 0 },
-                Items = new List<ListItem>(),
-                TopMarkets = new List<MarketPriceSummary>(),
-                BestMarket = new MarketPriceSummary { MarketName = "Adicione produtos para ver", TotalPrice = 0 }
-            };
         }
     }
 
     private async void OnEditListTapped(object sender, TappedEventArgs e)
     {
         if (ListData?.ListInfo == null) return;
-
-        string novoNome = await DisplayPromptAsync("Editar Lista", "Qual o novo nome da sua lista?", "SALVAR", "CANCELAR", null, -1, Keyboard.Text, ListData.ListInfo.Name);
-
+        
+        string novoNome = await DisplayPromptAsync("Editar", "Nome da lista:", initialValue: ListData.ListInfo.Name);
+        
         if (!string.IsNullOrWhiteSpace(novoNome) && novoNome != ListData.ListInfo.Name)
         {
-            ListData.ListInfo.Name = novoNome;
-            OnPropertyChanged(nameof(ListData));
+            bool sucesso = await _apiService.UpdateListNameAsync(_listId, novoNome);
+            
+            if (sucesso)
+            {
+                ListData.ListInfo.Name = novoNome;
+                OnPropertyChanged(nameof(ListData));
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível alterar o nome da lista agora.", "OK");
+            }
+        }
+    }
 
-            // await _apiService.UpdateListNameAsync(_listId, novoNome);
+    private async void OnDeleteListTapped(object sender, TappedEventArgs e)
+    {
+        bool confirmou = await DisplayAlert("Atenção", "Tem certeza que deseja apagar esta lista?", "SIM", "NÃO");
+        
+        if (confirmou)
+        {
+            bool sucesso = await _apiService.DeleteListAsync(_listId);
+            
+            if (sucesso)
+            {
+                OnVoltarTapped(null, null);
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível apagar a lista.", "OK");
+            }
         }
     }
 
     private async void OnRemoveItemTapped(object sender, TappedEventArgs e)
     {
-        var result = await DisplayAlert("Aviso", "Remover este item da lista?", "SIM", "NÃO");
-        if (result)
+        if (e.Parameter is int itemId)
         {
-            // await _apiService.RemoveListItemAsync(itemId);
-            // LoadListDetails();
+            bool confirmou = await DisplayAlert("Remover", "Tirar este produto da lista?", "SIM", "NÃO");
+            
+            if (confirmou)
+            {
+                bool sucesso = await _apiService.RemoveListItemAsync(_listId, itemId);
+                
+                if (sucesso)
+                {
+                    await LoadListDetails();
+                }
+                else
+                {
+                    await DisplayAlert("Erro", "Não foi possível remover o produto.", "OK");
+                }
+            }
         }
     }
 
     private async void OnJogarListTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
+        
+        Preferences.Set("LastActiveListId", _listId);
 
         var mainTab = new TabNav();
         mainTab.CurrentPage = mainTab.Children[2];
-
-        if (Application.Current?.Windows.Count > 0)
-        {
-            Application.Current.Windows[0].Page = mainTab;
-        }
+        Application.Current.Windows[0].Page = mainTab;
     }
 
     private void OnVoltarTapped(object sender, TappedEventArgs e)
     {
         var mainTab = new TabNav();
         mainTab.CurrentPage = mainTab.Children[1];
-
-        if (Application.Current?.Windows.Count > 0)
-        {
-            Application.Current.Windows[0].Page = mainTab;
-        }
+        Application.Current.Windows[0].Page = mainTab;
     }
 
-    private async void OnDeleteListTapped(object sender, EventArgs e)
-    {
-        bool confirmou = await DisplayAlert("Excluir Lista", $"Tem certeza que quer apagar a lista '{ListData.ListInfo.Name}'?", "SIM, APAGAR", "CANCELAR");
-
-        if (confirmou)
-        {
-            bool sucesso = await _apiService.DeleteListAsync(_listId);
-
-            if (sucesso)
-            {
-                await DisplayAlert("Sucesso", "Lista removida!", "OK");
-
-                var mainTab = new TabNav();
-                mainTab.CurrentPage = mainTab.Children[1];
-                if (Application.Current?.Windows.Count > 0)
-                {
-                    Application.Current.Windows[0].Page = mainTab;
-                }
-            }
-            else
-            {
-                await DisplayAlert("Erro", "Não foi possível apagar a lista. Tente novamente.", "OK");
-            }
-        }
-    }
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)
     {
         var touchPos = e.GetPosition(container);
         if (touchPos == null) return;
-
         double tamanhoMaximo = 400;
         ripple.TranslationX = touchPos.Value.X - (tamanhoMaximo / 2);
         ripple.TranslationY = touchPos.Value.Y - (tamanhoMaximo / 2);
@@ -149,12 +142,10 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
         ripple.HeightRequest = tamanhoMaximo;
         ripple.Scale = 0;
         ripple.Opacity = 0.5;
-
         await Task.WhenAll(
             ripple.ScaleTo(1, 350, Easing.CubicOut),
             ripple.FadeTo(0, 350, Easing.Linear)
         );
-
         ripple.Scale = 0;
     }
 }

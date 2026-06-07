@@ -24,12 +24,9 @@ public partial class ListsPage : ContentPage
         var lists = await _apiService.GetMyListsAsync();
 
         MyLists.Clear();
-        if (lists != null)
+        foreach (var list in lists)
         {
-            foreach (var list in lists)
-            {
-                MyLists.Add(list);
-            }
+            MyLists.Add(list);
         }
     }
 

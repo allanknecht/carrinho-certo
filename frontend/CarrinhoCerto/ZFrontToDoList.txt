@@ -1,2 +1,3 @@
-﻿{FRONTEND} STILL To-Do List:
-[ ] Aparecer na lista os produtos adicionados e o melhor preço e o top3 mercados mais baratos
+﻿{FRONTEND} FINAL To-Do List:
+[ ] Ajustar para aparecer o nome do produto na lista ao invés do ID
+[ ] Ajustar para aparecer o valor do produto na lista e em ONDE DOI MENOS NO BOLSO e no TOP3 MERCADOS
