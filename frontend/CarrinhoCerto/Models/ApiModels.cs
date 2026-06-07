@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CarrinhoCerto.Models;
 
@@ -51,4 +52,61 @@ public class ProductPricesResponse
 
     [JsonPropertyName("stores")]
     public List<StorePrice>? Stores { get; set; }
+}
+
+public class ShoppingList
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("items_count")]
+    public int ItemCount { get; set; }
+}
+
+public class ShoppingListsWrapper
+{
+    [JsonPropertyName("shopping_lists")]
+    public List<ShoppingList>? ShoppingLists { get; set; }
+}
+
+public class ListItem
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("product_name")]
+    public string? ProductName { get; set; }
+
+    [JsonPropertyName("quantity")]
+    public int Quantity { get; set; }
+}
+
+public class MarketPriceSummary
+{
+    [JsonPropertyName("market_name")]
+    public string? MarketName { get; set; }
+
+    [JsonPropertyName("total_price")]
+    public decimal TotalPrice { get; set; }
+}
+
+public class ListDetailsResponse
+{
+    [JsonPropertyName("list_info")]
+    public ShoppingList? ListInfo { get; set; }
+
+    [JsonPropertyName("items")]
+    public List<ListItem>? Items { get; set; }
+
+    [JsonPropertyName("best_market")]
+    public MarketPriceSummary? BestMarket { get; set; }
+
+    [JsonPropertyName("top_markets")]
+    public List<MarketPriceSummary>? TopMarkets { get; set; }
 }

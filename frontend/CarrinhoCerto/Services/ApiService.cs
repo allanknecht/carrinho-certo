@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using CarrinhoCerto.Models;
+using System.Text.Json;
 
 namespace CarrinhoCerto.Services;
 
@@ -27,7 +28,7 @@ public class ApiService
     {
         try
         {
-            var request = new RegisterRequest { email = email, password = password };
+            var request = new { email = email, password = password };
             var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/users", request);
 
             if (response.IsSuccessStatusCode)
@@ -36,12 +37,8 @@ public class ApiService
             }
             else
             {
-                var errorContent = await response.Content.ReadFromJsonAsync<RegisterErrorResponse>();
-                var errorMsg = errorContent?.errors != null
-                    ? string.Join("\n", errorContent.errors)
-                    : "Erro desconhecido ao criar cadastro.";
-
-                return (false, errorMsg);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return (false, "Erro ao criar cadastro. Verifique os dados.");
             }
         }
         catch (Exception ex)
@@ -80,7 +77,7 @@ public class ApiService
         SecureStorage.Default.Remove("auth_token");
         _httpClient.DefaultRequestHeaders.Authorization = null;
     }
-    
+
     public async Task<List<Product>> GetProductsAsync(string query = "", int page = 1)
     {
         await SetAuthHeaderAsync();
@@ -132,6 +129,131 @@ public class ApiService
         catch (Exception ex)
         {
             return (false, $"Erro interno do App: {ex.Message}");
+        }
+    }
+
+    public async Task<List<ShoppingList>> GetMyListsAsync()
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[JSON DAS LISTAS] {content}");
+
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var wrapper = JsonSerializer.Deserialize<ShoppingListsWrapper>(content, options);
+                return wrapper?.ShoppingLists ?? new List<ShoppingList>();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ERRO AO LER LISTAS] {ex.Message}");
+        }
+        return new List<ShoppingList>();
+    }
+
+    public async Task<ShoppingList> CreateListAsync(string name)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+
+            var payload = new { name = name };
+            var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{BaseUrl}/shopping_lists", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<ShoppingList>(responseContent, options);
+            }
+
+            else
+            {
+                var erroRails = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[ERRO AO CRIAR LISTA] {response.StatusCode}: {erroRails}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[EXCEÇÃO] {ex.Message}");
+        }
+        return null;
+    }
+
+    public async Task<ListDetailsResponse> GetListDetailsAsync(int listId)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                try
+                {
+                    var fullResponse = JsonSerializer.Deserialize<ListDetailsResponse>(content, options);
+                    if (fullResponse?.ListInfo != null && !string.IsNullOrEmpty(fullResponse.ListInfo.Name))
+                        return fullResponse;
+                }
+                catch { }
+
+                var basicList = JsonSerializer.Deserialize<ShoppingList>(content, options);
+                if (basicList != null && basicList.Id != 0)
+                {
+                    return new ListDetailsResponse
+                    {
+                        ListInfo = basicList,
+                        Items = new List<ListItem>(),
+                        TopMarkets = new List<MarketPriceSummary>(),
+                        BestMarket = null
+                    };
+                }
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    public async Task<bool> AddProductToListAsync(int listId, int productId, int quantity = 1)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+
+            var payload = new { shopping_list_item = new { product_id = productId, quantity = quantity } };
+            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{BaseUrl}/shopping_lists/{listId}/items", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteListAsync(int listId)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.DeleteAsync($"{BaseUrl}/shopping_lists/{listId}");
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ERRO AO EXCLUIR] {ex.Message}");
+            return false;
         }
     }
 }

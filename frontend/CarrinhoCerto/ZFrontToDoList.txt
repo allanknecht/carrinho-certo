@@ -1,3 +1,2 @@
 ﻿{FRONTEND} STILL To-Do List:
-[ ] Ajustar a funcionalidade de criar lista e colocar produtos na lista
-[ ] Ajustar a função de adicionar na lista pelo próprio produto
+[ ] Aparecer na lista os produtos adicionados e o melhor preço e o top3 mercados mais baratos

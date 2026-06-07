@@ -1,24 +1,74 @@
-using CarrinhoCerto.Pages;
+using CarrinhoCerto.Models;
 using CarrinhoCerto.Pages.List;
+using CarrinhoCerto.Services;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace CarrinhoCerto.Pages;
 
 public partial class ListsPage : ContentPage
 {
-	public ListsPage()
-	{
-		InitializeComponent();
-	}
+    private readonly ApiService _apiService;
+    public ObservableCollection<ShoppingList> MyLists { get; set; } = new();
+
+    public ListsPage()
+    {
+        InitializeComponent();
+        _apiService = new ApiService();
+        BindingContext = this;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        var lists = await _apiService.GetMyListsAsync();
+
+        MyLists.Clear();
+        if (lists != null)
+        {
+            foreach (var list in lists)
+            {
+                MyLists.Add(list);
+            }
+        }
+    }
 
     private async void OnCriarListTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
-        this.Window.Page = new CreateList();
+
+        string listName = await DisplayPromptAsync("Nova Lista", "Qual o nome da sua listinha?", "CRIAR", "CANCELAR", "Ex: Churrasco Domingão");
+
+        if (!string.IsNullOrWhiteSpace(listName))
+        {
+            var newList = await _apiService.CreateListAsync(listName);
+            if (newList != null)
+            {
+                if (Application.Current != null)
+                {
+                    Application.Current.Windows[0].Page = new CreateList(newList.Id);
+                }
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível criar a lista agora.", "OK");
+            }
+        }
     }
 
-    private void OnBorderTapped(object sender, EventArgs e)
+    private void OnListTapped(object sender, TappedEventArgs e)
     {
-        this.Window.Page = new CreateList();
+        // Pega o ID da lista clicada
+        var border = sender as Border;
+        var recognizer = border?.GestureRecognizers.FirstOrDefault(r => r is TapGestureRecognizer) as TapGestureRecognizer;
+
+        if (recognizer?.CommandParameter is int listId)
+        {
+            if (Application.Current != null)
+            {
+                Application.Current.Windows[0].Page = new CreateList(listId);
+            }
+        }
     }
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)

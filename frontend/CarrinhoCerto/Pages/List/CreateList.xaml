@@ -5,195 +5,124 @@
              BackgroundColor="#F2F2F2"
              Title="CreateList">
     <ScrollView>
-        <VerticalStackLayout Spacing="5"
-                             Padding="30"
-                             VerticalOptions="Center">
+        <VerticalStackLayout Spacing="5" Padding="30" VerticalOptions="Center">
 
             <HorizontalStackLayout Margin="0, -20, 0, 30" HorizontalOptions="Start">
                 <HorizontalStackLayout.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnVoltarTapped" />
                 </HorizontalStackLayout.GestureRecognizers>
-
-                <Label Text="←"
-                       TextColor="#E80000"
-                       FontFamily="PoppinsBlack"
-                       FontSize="30"
-                       VerticalOptions="Center"
-                       Margin="0,-7,0,0"/>
-
-                <Label Text="VOLTAR"
-                       TextColor="#616161"
-                       FontFamily="PoppinsBold"
-                       FontSize="16"
-                       VerticalOptions="Center"/>
+                <Label Text="←" TextColor="#E80000" FontFamily="PoppinsBlack" FontSize="30" VerticalOptions="Center" Margin="0,-7,0,0"/>
+                <Label Text="VOLTAR" TextColor="#616161" FontFamily="PoppinsBold" FontSize="16" VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout Spacing="5">
-                <Label x:Name="lbList"
-                       Text="Nova lista (1)"
-                       TextColor="#616161"
-                       FontSize="22"
-                       FontFamily="PoppinsBold"
-                       Margin="0,-10,0,0"/>
+            <HorizontalStackLayout Spacing="10">
+                <Label Text="{Binding ListData.ListInfo.Name, TargetNullValue='Carregando...'}"
+                       TextColor="#616161" FontSize="22" FontFamily="PoppinsBold" Margin="0,-10,0,0"/>
 
-                <Image Source="pen.svg"
-                       WidthRequest="20"
-                       HeightRequest="20"
-                       VerticalOptions="Center"
-                       Margin="0,-10,0,0"/>
+                <Image Source="pen.svg" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" Margin="0,-10,0,0">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEditListTapped" />
+                    </Image.GestureRecognizers>
+                </Image>
+
+                <Image Source="trash.svg" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" Margin="0,-10,0,0">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDeleteListTapped" />
+                    </Image.GestureRecognizers>
+                </Image>
             </HorizontalStackLayout>
 
-            <Label Text="1 itens anotados"
-                   TextColor="#9E9E9E"
-                   FontSize="14"
-                   FontFamily="PoppinsRegular"
-                   Margin="0,-10,0,20"/>
+            <Label Text="{Binding ListData.ListInfo.ItemCount, StringFormat='{0} itens anotados', TargetNullValue='0 itens anotados'}"
+                   TextColor="#9E9E9E" FontSize="14" FontFamily="PoppinsRegular" Margin="0,-10,0,20"/>
 
-            <Line X1="0" Y1="0" 
-                  X2="500" Y2="0" 
-                  Stroke="#E80000" 
-                  StrokeThickness="2"
-                  Margin="0,-10,0,0"/>
+            <Line X1="0" Y1="0" X2="500" Y2="0" Stroke="#E80000" StrokeThickness="2" Margin="0,-10,0,0"/>
 
-            <Border BackgroundColor="#F0FDF4"
-                    Stroke="#BBF7D0"
-                    StrokeThickness="1"
-                    Padding="15"
-                    Margin="0,10,0,15">
-
+            <Border BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1" Padding="15" Margin="0,10,0,15">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
                 </Border.StrokeShape>
-
                 <VerticalStackLayout Spacing="2">
                     <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
-                        <Image Source="cart.svg"
-                               WidthRequest="16" HeightRequest="16"
-                               VerticalOptions="Center" />
-                        <Label Text="ONDE DÓI MENOS NO BOLSO"
-                               TextColor="#15803D"
-                               FontFamily="PoppinsBold"
-                               FontSize="10"
-                               VerticalOptions="Center" />
+                        <Image Source="cart.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                        <Label Text="ONDE DÓI MENOS NO BOLSO" TextColor="#15803D" FontFamily="PoppinsBold" FontSize="10" VerticalOptions="Center" />
                     </HorizontalStackLayout>
 
-                    <Label Text="Supermercado Extra"
-                           TextColor="#1E293B"
-                           FontFamily="PoppinsBlack"
-                           FontSize="14"
-                           Margin="0,-5,0,-6" />
+                    <Label Text="{Binding ListData.BestMarket.MarketName, TargetNullValue='Nenhum dado'}" 
+                           TextColor="#1E293B" FontFamily="PoppinsBlack" FontSize="14" Margin="0,-5,0,-6" />
 
                     <Label FontSize="10" Margin="0,0,0,0">
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="A facada gira em torno de: " TextColor="#64748B" FontFamily="PoppinsRegular" />
-                                <Span Text="R$ 49.80" TextColor="#15803D" FontFamily="PoppinsBold" />
+                                <Span Text="{Binding ListData.BestMarket.TotalPrice, StringFormat='R$ {0:F2}', TargetNullValue='R$ 0,00'}" 
+                                      TextColor="#15803D" FontFamily="PoppinsBold" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
                 </VerticalStackLayout>
             </Border>
 
-            <Border BackgroundColor="#FFFFFF"
-                    Stroke="#F3F4F6"
-                    StrokeThickness="1"
-                    Padding="15"
-                    Margin="0,0,0,15">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding ListData.Items}" Spacing="10" Margin="0,0,0,15">
+
+                <BindableLayout.EmptyView>
+                    <Label Text="Esta lista ainda está vazia! Adicione produtos para ver os preços." 
+                           TextColor="#9E9E9E" FontFamily="PoppinsRegular" FontSize="12" HorizontalOptions="Center" HorizontalTextAlignment="Center" Margin="10"/>
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Border BackgroundColor="#FFFFFF" Stroke="#F3F4F6" StrokeThickness="1" Padding="15">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="0">
+                                    <Label Text="{Binding ProductName}" TextColor="#616161" FontFamily="PoppinsBold" FontSize="14" Margin="0,0,0,0"/>
+                                    <Label Text="{Binding Quantity, StringFormat='Qtd: {0}'}" TextColor="#64748B" FontFamily="PoppinsRegular" FontSize="10" Margin="0,-5,0,0"/>
+                                </VerticalStackLayout>
+                                <Image Source="trash.svg" Grid.Column="1" WidthRequest="20" HeightRequest="20" VerticalOptions="Start">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnRemoveItemTapped" CommandParameter="{Binding Id}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Border BackgroundColor="#F8FAFC" StrokeThickness="0" Padding="15" Margin="0,0,0,15">
                 <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="10" />
+                    <RoundRectangle CornerRadius="8" />
                 </Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="TOP 3 MAIS BARATOS" TextColor="#64748B" FontFamily="PoppinsBold" FontSize="10" Margin="0,0,0,5" />
 
-                <VerticalStackLayout Spacing="15">
-                    <Grid ColumnDefinitions="*, Auto">
-                        <VerticalStackLayout Grid.Column="0" Spacing="0">
-                            <Label Text="Arroz Branco Tipo 1 (5kg)"
-                                   TextColor="#616161"
-                                   FontFamily="PoppinsBold"
-                                   FontSize="14"
-                                   Margin="0,0,0,0"/>
-                            
-                            <Label Text="Qtd: 2"
-                                   TextColor="#64748B"
-                                   FontFamily="PoppinsRegular"
-                                   FontSize="10"
-                                   Margin="0,-5,0,0"/>
-                        </VerticalStackLayout>
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ListData.TopMarkets}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Label Grid.Column="0" Text="{Binding MarketName}" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
+                                        <Label Grid.Column="1" Text="{Binding TotalPrice, StringFormat='R$ {0:F2}'}" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
+                                    </Grid>
+                                    <Line X1="0" Y1="0" X2="500" Y2="0" Stroke="#E80000" StrokeThickness="1.5" Margin="0,0,0,0"/>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
 
-                        <Image Source="trash.svg"
-                               Grid.Column="1"
-                               WidthRequest="20"
-                               HeightRequest="20"
-                               VerticalOptions="Start" />
-                    </Grid>
-
-                    <Border BackgroundColor="#F8FAFC"
-                            StrokeThickness="0"
-                            Padding="15">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="8" />
-                        </Border.StrokeShape>
-
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="TOP 3 MAIS BARATOS"
-                                   TextColor="#64748B"
-                                   FontFamily="PoppinsBold"
-                                   FontSize="10"
-                                   Margin="0,0,0,5" />
-
-                            <Grid ColumnDefinitions="*, Auto">
-                                <Label Grid.Column="0" Text="Supermercado Extra" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
-                                <Label Grid.Column="1" Text="R$ 24.90" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
-                            </Grid>
-
-                            <Line X1="0" Y1="0" 
-                                  X2="500" Y2="0" 
-                                  Stroke="#E80000" 
-                                  StrokeThickness="1.5"
-                                  Margin="0,0,0,0"/>
-
-                            <Grid ColumnDefinitions="*, Auto">
-                                <Label Grid.Column="0" Text="Carrefour Bairro" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
-                                <Label Grid.Column="1" Text="R$ 25.50" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
-                            </Grid>
-
-                            <Line X1="0" Y1="0" 
-                                X2="500" Y2="0" 
-                                Stroke="#E80000" 
-                                StrokeThickness="1.5"
-                                Margin="0,0,0,0"/>
-
-                            <Grid ColumnDefinitions="*, Auto">
-                                <Label Grid.Column="0" Text="Mercadinho do Zé" TextColor="#475569" FontFamily="PoppinsRegular" FontSize="12" />
-                                <Label Grid.Column="1" Text="R$ 26.90" TextColor="#1E293B" FontFamily="PoppinsBold" FontSize="13" />
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
                 </VerticalStackLayout>
             </Border>
 
-            <Border BackgroundColor="#E80000"
-                    StrokeThickness="0"
-                    HeightRequest="50">
-
+            <Border BackgroundColor="#E80000" StrokeThickness="0" HeightRequest="50">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
                 </Border.StrokeShape>
-
                 <Grid>
-                    <Ellipse x:Name="RippleEnviar" 
-                             Fill="#B30000" 
-                             Opacity="0"
-                             HorizontalOptions="Start" 
-                             VerticalOptions="Start" />
-
-                    <Label Text="+ JOGAR NA LISTA"
-                            TextColor="#FEF035"
-                            FontFamily="PoppinsBlack"
-                            FontSize="25"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"/>
+                    <Ellipse x:Name="RippleEnviar" Fill="#B30000" Opacity="0" HorizontalOptions="Start" VerticalOptions="Start" />
+                    <Label Text="+ JOGAR NA LISTA" TextColor="#FEF035" FontFamily="PoppinsBlack" FontSize="25" HorizontalOptions="Center" VerticalOptions="Center"/>
                 </Grid>
-
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnJogarListTapped"/>
                 </Border.GestureRecognizers>
