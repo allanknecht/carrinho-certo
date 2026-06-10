@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace CarrinhoCerto;
+namespace CarrinhoCerto.Platforms.Android;
 
 [Application(UsesCleartextTraffic = true)]
 public class MainApplication : MauiApplication

@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
   post "auth/login", to: "auth#login"
-  resource :account, only: [:destroy]
+  resource :account, only: [:show, :destroy]
   resources :users, only: [:create]
   resources :receipts, only: [:create]
-  resources :products, only: [:index]
+  resources :products, only: [:index] do
+    collection do
+      get :highlights
+    end
+  end
   get "products/:id/prices", to: "product_prices#show", as: :product_prices
 
   resources :shopping_lists do

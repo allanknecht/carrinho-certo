@@ -36,13 +36,13 @@
                                    VerticalOptions="Center"/>
 
                             <VerticalStackLayout HorizontalOptions="Center">
-                                <Label Text="Chefia"
+                                <Label Text="{Binding UserDisplayName}"
                                        TextColor="#616161"
                                        FontFamily="PoppinsBold" FontSize="14"
                                        Margin="0,0,0,-5"
                                        HorizontalTextAlignment="Center"/>
 
-                                <Label Text="usuario.logado@email.com.br"
+                                <Label Text="{Binding UserEmail}"
                                        TextColor="#9E9E9E"
                                        FontFamily="PoppinsRegular"
                                        FontSize="12" HorizontalOptions="Center"

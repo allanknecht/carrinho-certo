@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui.Controls;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Plugin.LocalNotification;
+using CarrinhoCerto.Services;
 
 namespace CarrinhoCerto;
 
@@ -11,6 +13,7 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
+		builder.Services.AddSingleton(ApiService.Shared);
 		builder
 			.UseMauiApp<App>()
             .UseLocalNotification()

@@ -6,6 +6,11 @@ class ProductsController < ApplicationController
   DEFAULT_PER = 20
   MAX_PER = 100
 
+  def highlights
+    items = Pricing::PriceHighlights.call(limit: highlight_limit)
+    render json: { highlights: items }
+  end
+
   def index
     scope = ProductCanonical.order(:display_name)
     q = params[:q].to_s.strip
@@ -38,6 +43,11 @@ class ProductsController < ApplicationController
   end
 
   private
+
+  def highlight_limit
+    n = params[:limit].to_i
+    n.positive? ? [n, 10].min : 3
+  end
 
   def product_json(product)
     {

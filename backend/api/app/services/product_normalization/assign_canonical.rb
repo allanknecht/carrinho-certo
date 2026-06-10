@@ -32,7 +32,12 @@ module ProductNormalization
 
     def resolve(key)
       if (pa = ProductAlias.find_by(alias_normalized: key))
-        return [pa.product_canonical, "alias"]
+        if pa.product_canonical.present?
+          return [pa.product_canonical, "alias"]
+        end
+
+        Rails.logger.warn("[ProductNormalization] orphan alias for key=#{key.inspect}, re-resolving")
+        pa.destroy
       end
 
       if (pc = ProductCanonical.find_by(normalized_key: key))

@@ -9,6 +9,7 @@ module ShoppingListItemJson
     {
       id: item.id,
       product_canonical_id: item.product_canonical_id,
+      product_name: item.product_canonical&.display_name || item.label,
       label: item.label,
       quantidade: format("%.3f", item.quantidade),
       ordem: item.ordem,

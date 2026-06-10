@@ -2,17 +2,25 @@
 using System.Net.Http.Headers;
 using CarrinhoCerto.Models;
 using System.Text.Json;
+using System.Globalization;
 
 namespace CarrinhoCerto.Services;
 
 public class ApiService
 {
+    private static readonly HttpClient SharedHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    public static ApiService Shared { get; } = new();
+
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://10.156.23.70:3000";
+    private const string BaseUrl = "http://192.168.0.34:3000";
 
     public ApiService()
     {
-        _httpClient = new HttpClient();
+        _httpClient = SharedHttpClient;
     }
 
     private async Task SetAuthHeaderAsync()
@@ -60,6 +68,10 @@ public class ApiService
                 if (result?.Token != null)
                 {
                     await SecureStorage.Default.SetAsync("auth_token", result.Token);
+                    if (!string.IsNullOrEmpty(result.User?.Email))
+                    {
+                        await SecureStorage.Default.SetAsync("user_email", result.User.Email);
+                    }
                     return (true, string.Empty);
                 }
             }
@@ -75,7 +87,52 @@ public class ApiService
     public void Logout()
     {
         SecureStorage.Default.Remove("auth_token");
+        SecureStorage.Default.Remove("user_email");
         _httpClient.DefaultRequestHeaders.Authorization = null;
+    }
+
+    public async Task<UserProfile?> GetCurrentUserAsync()
+    {
+        try
+        {
+            var cached = await SecureStorage.Default.GetAsync("user_email");
+            if (!string.IsNullOrEmpty(cached))
+            {
+                return new UserProfile { Email = cached };
+            }
+
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"{BaseUrl}/account");
+            if (!response.IsSuccessStatusCode) return null;
+
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+            if (!string.IsNullOrEmpty(result?.User?.Email))
+            {
+                await SecureStorage.Default.SetAsync("user_email", result.User.Email);
+            }
+            return result?.User;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<List<PriceHighlight>> GetPriceHighlightsAsync(int limit = 3)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync($"{BaseUrl}/products/highlights?limit={limit}");
+            if (!response.IsSuccessStatusCode) return new List<PriceHighlight>();
+
+            var result = await response.Content.ReadFromJsonAsync<PriceHighlightsResponse>();
+            return result?.Highlights ?? new List<PriceHighlight>();
+        }
+        catch
+        {
+            return new List<PriceHighlight>();
+        }
     }
 
     public async Task<List<Product>> GetProductsAsync(string query = "", int page = 1)
@@ -232,117 +289,28 @@ public class ApiService
             await SetAuthHeaderAsync();
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            var listResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}");
-            ShoppingList listInfo = null;
-            if (listResponse.IsSuccessStatusCode)
+            var listTask = _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}");
+            var rankingsTask = _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/store_rankings");
+            await Task.WhenAll(listTask, rankingsTask);
+
+            ShoppingList? listInfo = null;
+            if (listTask.Result.IsSuccessStatusCode)
             {
-                var content = await listResponse.Content.ReadAsStringAsync();
+                var content = await listTask.Result.Content.ReadAsStringAsync();
                 listInfo = JsonSerializer.Deserialize<ShoppingList>(content, options);
             }
 
-            List<ListItem> itemsRaw = new List<ListItem>();
-            var itemsResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/items");
-            if (itemsResponse.IsSuccessStatusCode)
+            var items = ConsolidateListItems(listInfo?.Items ?? new List<ListItem>());
+
+            var rankings = new List<MarketPriceSummary>();
+            if (rankingsTask.Result.IsSuccessStatusCode)
             {
-                var content = await itemsResponse.Content.ReadAsStringAsync();
-                var doc = JsonDocument.Parse(content);
-                if (doc.RootElement.TryGetProperty("items", out var itemsElem))
-                {
-                    itemsRaw = JsonSerializer.Deserialize<List<ListItem>>(itemsElem.GetRawText(), options) ?? new List<ListItem>();
-                }
+                var ranking = await rankingsTask.Result.Content.ReadFromJsonAsync<RankingResponse>(options);
+                rankings = ranking?.Stores?
+                    .Where(s => s.LinesMissingPrice == 0)
+                    .OrderBy(s => s.TotalFinal)
+                    .ToList() ?? new List<MarketPriceSummary>();
             }
-
-            List<ListItem> items = new List<ListItem>();
-            foreach (var rawItem in itemsRaw)
-            {
-                if (rawItem.ProductId == null) continue;
-
-                var existente = items.FirstOrDefault(i => i.ProductId == rawItem.ProductId);
-                if (existente != null)
-                {
-                    double q1 = 1, q2 = 1;
-                    double.TryParse(existente.QuantidadeRaw?.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out q1);
-                    double.TryParse(rawItem.QuantidadeRaw?.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out q2);
-
-                    existente.QuantidadeRaw = (q1 + q2).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    items.Add(rawItem);
-                }
-            }
-
-            List<MarketPriceSummary> rankings = new List<MarketPriceSummary>();
-            var totaisPorMercado = new Dictionary<string, decimal>();
-            var contagemProdutosPorMercado = new Dictionary<string, int>();
-
-            int totalDeProdutosDiferentesNaLista = items.Count;
-
-            if (items.Any())
-            {
-                foreach (var item in items)
-                {
-                    if (item.ProductId.HasValue)
-                    {
-                        var pricesResponse = await GetProductPricesAsync(item.ProductId.Value);
-
-                        if (pricesResponse != null)
-                        {
-                            item.ProductName = pricesResponse.Product?.DisplayName;
-
-                            double qtd = 1.0;
-                            if (!string.IsNullOrEmpty(item.QuantidadeRaw))
-                            {
-                                double.TryParse(item.QuantidadeRaw.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out qtd);
-                            }
-
-                            if (pricesResponse.Stores != null && pricesResponse.Stores.Any())
-                            {
-                                var menorPrecoProduto = pricesResponse.Stores
-                                    .Select(s => decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) ? p : 0)
-                                    .Where(p => p > 0)
-                                    .OrderBy(p => p)
-                                    .FirstOrDefault();
-
-                                item.EstimatedPrice = menorPrecoProduto;
-
-                                var lojasValidasProduto = pricesResponse.Stores
-                                    .GroupBy(s => !string.IsNullOrEmpty(s.Nome) ? s.Nome : $"Mercado {s.StoreId}")
-                                    .Select(g => new {
-                                        StoreName = g.Key,
-                                        LowestPrice = g.Select(s => decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) ? p : 0).Where(p => p > 0).Min()
-                                    }).Where(x => x.LowestPrice > 0);
-
-                                foreach (var store in lojasValidasProduto)
-                                {
-                                    if (!totaisPorMercado.ContainsKey(store.StoreName))
-                                    {
-                                        totaisPorMercado[store.StoreName] = 0;
-                                        contagemProdutosPorMercado[store.StoreName] = 0;
-                                    }
-
-                                    totaisPorMercado[store.StoreName] += (store.LowestPrice * (decimal)qtd);
-                                    contagemProdutosPorMercado[store.StoreName]++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (var kvp in totaisPorMercado)
-            {
-                if (contagemProdutosPorMercado[kvp.Key] == totalDeProdutosDiferentesNaLista)
-                {
-                    rankings.Add(new MarketPriceSummary
-                    {
-                        MarketName = kvp.Key,
-                        TotalPrice = kvp.Value
-                    });
-                }
-            }
-
-            rankings = rankings.OrderBy(r => r.TotalPrice).ToList();
 
             if (listInfo != null)
             {
@@ -362,6 +330,33 @@ public class ApiService
             System.Diagnostics.Debug.WriteLine($"[ERRO DETALHES] {ex.Message}");
             return null;
         }
+    }
+
+    private static List<ListItem> ConsolidateListItems(IEnumerable<ListItem> itemsRaw)
+    {
+        var items = new List<ListItem>();
+        foreach (var rawItem in itemsRaw)
+        {
+            if (rawItem.ProductId == null)
+            {
+                items.Add(rawItem);
+                continue;
+            }
+
+            var existente = items.FirstOrDefault(i => i.ProductId == rawItem.ProductId);
+            if (existente != null)
+            {
+                double q1 = 1, q2 = 1;
+                double.TryParse(existente.QuantidadeRaw?.Replace(".000", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out q1);
+                double.TryParse(rawItem.QuantidadeRaw?.Replace(".000", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out q2);
+                existente.QuantidadeRaw = (q1 + q2).ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                items.Add(rawItem);
+            }
+        }
+        return items;
     }
 
     public async Task<bool> AddProductToListAsync(int listId, int productId, int quantity = 1)

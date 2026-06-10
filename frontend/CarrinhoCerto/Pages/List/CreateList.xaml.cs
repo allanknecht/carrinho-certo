@@ -25,8 +25,13 @@ public partial class CreateList : ContentPage
     public CreateList(int listId)
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
         _listId = listId;
+        ListData = new ListDetailsResponse
+        {
+            ListInfo = new ShoppingList { Name = "Carregando..." },
+            Items = new List<ListItem>()
+        };
         BindingContext = this;
     }
 

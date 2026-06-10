@@ -17,7 +17,7 @@ public partial class ScanPage : ContentPage
     {
         InitializeComponent();
 
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
 
         CameraScanner.Options = new BarcodeReaderOptions
         {

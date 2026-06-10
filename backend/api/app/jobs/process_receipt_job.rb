@@ -86,7 +86,7 @@ class ProcessReceiptJob < ApplicationJob
     )
   end
 
-def fetch_receipt_page(url, limit = 5)
+  def fetch_receipt_page(url, limit = 5)
     raise "Muitos redirecionamentos (Loop da SEFAZ)" if limit == 0
 
     uri = URI.parse(url)
@@ -100,12 +100,13 @@ def fetch_receipt_page(url, limit = 5)
     path = uri.request_uri
     path = "/" if path.blank?
     request = Net::HTTP::Get.new(path)
-    
+
     # faz com que o SEFAZ interprete o google chrome como um windows
     request["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
     request["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    request["Accept-Language"] = "pt-BR,pt;q=0.9"
 
-    response = http.request(request)
+    response = request_with_ssl_retries(http, request)
 
     case response
     when Net::HTTPSuccess
@@ -146,5 +147,18 @@ def fetch_receipt_page(url, limit = 5)
     return nil if hora_emissao.blank?
 
     Time.zone.parse("2000-01-01 #{hora_emissao}")
+  end
+
+  # SEFAZ/SVRS occasionally drops TLS handshakes; a short retry usually succeeds.
+  def request_with_ssl_retries(http, request, attempts: 3)
+    last_error = nil
+    attempts.times do |i|
+      return http.request(request)
+    rescue OpenSSL::SSL::SSLError => e
+      last_error = e
+      Rails.logger.warn("[ProcessReceiptJob] SSL error (attempt #{i + 1}/#{attempts}): #{e.message}")
+      sleep(0.75 * (i + 1)) if i < attempts - 1
+    end
+    raise last_error
   end
 end

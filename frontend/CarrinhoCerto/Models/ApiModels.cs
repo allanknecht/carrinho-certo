@@ -7,6 +7,50 @@ public class LoginResponse
 {
     [JsonPropertyName("token")]
     public string? Token { get; set; }
+
+    [JsonPropertyName("user")]
+    public UserProfile? User { get; set; }
+}
+
+public class UserProfile
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
+    public string DisplayName
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Email)) return "Usuário";
+            var local = Email.Split('@')[0];
+            if (local.Length == 0) return "Usuário";
+            return char.ToUpper(local[0]) + local[1..];
+        }
+    }
+}
+
+public class AccountResponse
+{
+    [JsonPropertyName("user")]
+    public UserProfile? User { get; set; }
+}
+
+public class PriceHighlight
+{
+    [JsonPropertyName("product_name")]
+    public string? ProductName { get; set; }
+
+    [JsonPropertyName("price_description")]
+    public string? PriceDescription { get; set; }
+}
+
+public class PriceHighlightsResponse
+{
+    [JsonPropertyName("highlights")]
+    public List<PriceHighlight>? Highlights { get; set; }
 }
 
 public class Product
@@ -67,6 +111,9 @@ public class ShoppingList
 
     [JsonPropertyName("items_count")]
     public int ItemCount { get; set; }
+
+    [JsonPropertyName("items")]
+    public List<ListItem>? Items { get; set; }
 }
 
 public class ShoppingListsWrapper
@@ -96,7 +143,7 @@ public class ListItem
     [JsonIgnore]
     public decimal EstimatedPrice { get; set; }
 
-    public string EstimatedPriceFinal => EstimatedPrice > 0 ? $"A partir de: R$ {EstimatedPrice:F2}" : "Buscando preço...";
+    public string EstimatedPriceFinal => EstimatedPrice > 0 ? $"A partir de: R$ {EstimatedPrice:F2}" : string.Empty;
 }
 
 public class MarketPriceSummary
@@ -115,7 +162,29 @@ public class MarketPriceSummary
     [JsonPropertyName("total")]
     public decimal Total { get; set; }
 
-    public decimal TotalFinal => TotalPrice > 0 ? TotalPrice : Total;
+    [JsonPropertyName("estimated_total")]
+    public string? EstimatedTotal { get; set; }
+
+    [JsonPropertyName("lines_covered")]
+    public int LinesCovered { get; set; }
+
+    [JsonPropertyName("lines_missing_price")]
+    public int LinesMissingPrice { get; set; }
+
+    public decimal TotalFinal
+    {
+        get
+        {
+            if (TotalPrice > 0) return TotalPrice;
+            if (Total > 0) return Total;
+            if (!string.IsNullOrEmpty(EstimatedTotal) &&
+                decimal.TryParse(EstimatedTotal, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+            return 0;
+        }
+    }
 }
 
 public class ListDetailsResponse

@@ -10,7 +10,7 @@ public partial class ForgotPage : ContentPage
     public ForgotPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
     }
 
     private void OnVoltarTapped(object sender, TappedEventArgs e)

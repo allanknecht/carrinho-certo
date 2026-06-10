@@ -25,7 +25,7 @@
                            FontFamily="PoppinsRegular"/>
 
                     <Label x:Name="lbUser"
-                           Text="Chefia"
+                           Text="..."
                            TextColor="#616161"
                            FontSize="22"
                            FontFamily="PoppinsBold"

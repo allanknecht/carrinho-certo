@@ -2,9 +2,28 @@ class ReceiptsController < ApplicationController
   before_action :authenticate_user!
 
   def create
-    chave = Receipt.chave_from_source_url(receipt_params[:source_url].to_s)
-    if chave.present? && Receipt.exists?(chave_acesso: chave)
-      return render json: { error: "Receipt already registered", chave_acesso: chave }, status: :conflict
+    source_url = receipt_params[:source_url].to_s
+    chave = Receipt.chave_from_source_url(source_url)
+    if chave.present?
+      existing = Receipt.find_by(chave_acesso: chave)
+      if existing
+        if existing.status == "failed"
+          existing.update!(
+            user: current_user,
+            source_url: source_url,
+            status: "queued",
+            processing_error: nil
+          )
+          ProcessReceiptJob.perform_later(existing.id)
+          return render json: {
+            id: existing.id,
+            status: existing.status,
+            message: "Receipt requeued for processing."
+          }, status: :accepted
+        end
+
+        return render json: { error: "Receipt already registered", chave_acesso: chave }, status: :conflict
+      end
     end
 
     receipt = current_user.receipts.build(

@@ -11,7 +11,7 @@ public partial class ChangePasswordPage : ContentPage
     public ChangePasswordPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
     }
 
     private async void OnSalvarClicked(object sender, EventArgs e)

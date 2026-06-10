@@ -10,7 +10,7 @@ public partial class RegisterPage : ContentPage
     public RegisterPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
     }
 
     private async void OnCadastrarClicked(object sender, EventArgs e)

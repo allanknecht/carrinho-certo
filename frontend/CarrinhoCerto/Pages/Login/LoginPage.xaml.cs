@@ -11,7 +11,7 @@ public partial class LoginPage : ContentPage
     {
         InitializeComponent();
 
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
     }
 
     private async void Entrar_Clicked(object sender, EventArgs e)

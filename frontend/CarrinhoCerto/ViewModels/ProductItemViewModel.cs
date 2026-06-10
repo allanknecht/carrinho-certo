@@ -30,12 +30,15 @@ public class ProductItemViewModel : INotifyPropertyChanged
     public bool HasPrices => BestPrice != null;
     public bool HasReferencePrice => ReferencePrice != null;
 
-    public ProductItemViewModel(Product product, ApiService apiService)
+    public ProductItemViewModel(Product product, ApiService apiService, bool loadPrices = false)
     {
         Product = product;
         _apiService = apiService;
 
-        _ = LoadPricesAsync();
+        if (loadPrices)
+        {
+            _ = LoadPricesAsync();
+        }
     }
 
     private async Task LoadPricesAsync()

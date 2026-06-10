@@ -8,10 +8,14 @@ module ProductNormalization
     class Error < StandardError; end
 
     SYSTEM_PROMPT = <<~PROMPT.squish.freeze
-      You normalize Brazilian NFC-e / supermarket / café receipt line items for price comparison across stores.
+      You normalize Brazilian NFC-e / supermarket receipt line items for price comparison across stores.
       Reply with ONLY a JSON object (no markdown, no code fences) with exactly two string keys:
-      "normalized_key" — UPPERCASE ASCII letters, digits, and SINGLE spaces between words (max 80 chars). Use one space between every word; never concatenate separate words (e.g. write "COCA COLA" not "COCACOLA"). Strip accents via ASCII equivalents (CAFE not CAFÉ). Include volume/size when printed on the line (e.g. 350ML, 2L). Treat common POS abbreviations in context: in beverages "GLD" or "GEL" usually means GELADO (iced), "LT" means LATA (can), "PET" plastic bottle, "UN" is unit not part of the name.
-      "display_name" — **very short** Brazilian Portuguese for the shopper UI (accents allowed), max 120 chars but **prefer under ~45 characters**. Pattern: **brand + packaging + size** when applicable (e.g. "Sprite Lata 350ml", "Coca-Cola Pet 2L"). Do **not** repeat long POS marketing text or redundant flavor lines: if the receipt says "SABOR LIMAO" but it is the usual single-SKU can, **omit** the flavor and use only brand + Lata + 350ml. Avoid filler ("de", "tipo", "lata de") unless needed to disambiguate two different products. For weighed buffet / KG lines, a compact label is enough (e.g. "Buffet sorvete e açaí (kg)").
+      "normalized_key" — UPPERCASE ASCII letters, digits, and SINGLE spaces between words (max 80 chars). One space between words; never concatenate (e.g. "COCA COLA" not "COCACOLA"). Strip accents (CAFE not CAFÉ). Include size when printed (350ML, 900G, 22G, KG). Expand POS abbreviations in the key: RACAO=ração, DOCE=doce/bala, BAN.=banana, DACOLONIA=Da Colônia, ADUL.=adulto, PEQ.=pequeno, CAR.=carne, FGO=frango, DESCAF.=descafeinado, SAC.=sachê, REQ.CREM.=requeijão cremoso, CHA=chá, CAFE=café, GLD/GEL=gelado, LT=lata, PET=garrafa PET. Keep the product CATEGORY token when present (RACAO, DOCE, CHA, CAFE, QUEIJO, BATATA, REQ) — never drop it.
+      "display_name" — short Brazilian Portuguese for the shopper UI (accents allowed), max 120 chars, prefer under ~55 chars. Pattern: **category (when essential) + brand + variant + size**. Keep category words that define what the product IS: Ração, Doce, Chá, Café, Queijo, Batata, Requeijão. Beverages: brand + packaging + size; omit redundant flavor if obvious. Never misread POS truncations: BAN. after DOCE is banana, not "banda"; DACOLONIA is the brand "Da Colônia".
+      Examples (follow this style):
+      "RACAO DOG CHOW ADUL.900G PEQ.CAR.FGO" → normalized_key: "RACAO DOG CHOW ADULTO 900G PEQUENO CARNE FRANGO", display_name: "Ração Dog Chow Adulto 900g Peq."
+      "DOCE BAN.DACOLONIA MAIS FIT 22G FRUTAS" → normalized_key: "DOCE BANANA DA COLONIA MAIS FIT 22G FRUTAS", display_name: "Doce Banana Da Colônia Mais Fit 22g"
+      "CAFE SOLUVEL IGUACU DESCAF.SAC.40G" → normalized_key: "CAFE SOLUVEL IGUACU DESCAFEINADO SACHE 40G", display_name: "Café Solúvel Iguaçu Descaf. 40g"
       Same physical product must always get the same normalized_key even if the POS description changes.
     PROMPT
 
@@ -41,7 +45,7 @@ module ProductNormalization
       raw = http.chat_completion(
         [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: "Descrição na nota: #{@descricao}" },
+          { role: "user", content: build_user_prompt },
         ]
       )
 
@@ -50,6 +54,15 @@ module ProductNormalization
 
     private
 
+    def build_user_prompt
+      parts = ["Descrição na nota (texto literal do cupom): #{@descricao}"]
+      hints = PosAbbreviationHints.for(@descricao)
+      if hints.any?
+        parts << "Expansão obrigatória de abreviações POS nesta linha: #{hints.join(' | ')}"
+      end
+      parts.join("\n")
+    end
+
     def parse_json_payload(raw)
       text = extract_json_object(raw)
       data = JSON.parse(text)
@@ -57,7 +70,7 @@ module ProductNormalization
       name = data["display_name"].to_s
       raise Error, "missing keys" if key.blank? || name.blank?
 
-      { normalized_key: key, display_name: name }
+      LlmResultSanitizer.call(descricao_bruta: @descricao, normalized_key: key, display_name: name)
     rescue JSON::ParserError => e
       raise Error, "invalid JSON from model: #{e.message}"
     end

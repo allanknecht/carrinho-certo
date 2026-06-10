@@ -103,10 +103,19 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Grid Grid.Row="1" ColumnDefinitions="Auto, *" ColumnSpacing="15" Margin="0,10,0,0">
-            <Button Grid.Column="0" Text="←" FontFamily="PoppinsBlack" FontSize="30" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" HeightRequest="55" Padding="20,0" Clicked="OnBackClicked" />
-            <Button Grid.Column="1" Text="+ JOGAR NA LISTA" FontFamily="PoppinsBlack" FontSize="20" BackgroundColor="#E80000" TextColor="#FEF035" CornerRadius="10" HeightRequest="55" Clicked="OnAddToListClicked" />
-        </Grid>
+        <VerticalStackLayout Grid.Row="1" Spacing="12" Margin="0,10,0,0">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" VerticalOptions="Center">
+                <Label Text="Quantidade" FontFamily="PoppinsBold" FontSize="14" TextColor="#616161" VerticalOptions="Center"/>
+                <Button Text="−" FontFamily="PoppinsBlack" FontSize="22" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" WidthRequest="44" HeightRequest="44" Padding="0" Clicked="OnQuantityDecrease"/>
+                <Label x:Name="QuantityLabel" Text="1" FontFamily="PoppinsBlack" FontSize="22" TextColor="#111827" VerticalOptions="Center" WidthRequest="28" HorizontalTextAlignment="Center"/>
+                <Button Text="+" FontFamily="PoppinsBlack" FontSize="22" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" WidthRequest="44" HeightRequest="44" Padding="0" Clicked="OnQuantityIncrease"/>
+            </HorizontalStackLayout>
+
+            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="15">
+                <Button Grid.Column="0" Text="←" FontFamily="PoppinsBlack" FontSize="30" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" HeightRequest="55" Padding="20,0" Clicked="OnBackClicked" />
+                <Button x:Name="AddToListButton" Grid.Column="1" Text="+ JOGAR NA LISTA" FontFamily="PoppinsBlack" FontSize="20" BackgroundColor="#E80000" TextColor="#FEF035" CornerRadius="10" HeightRequest="55" Clicked="OnAddToListClicked" />
+            </Grid>
+        </VerticalStackLayout>
 
     </Grid>
 </ContentPage>

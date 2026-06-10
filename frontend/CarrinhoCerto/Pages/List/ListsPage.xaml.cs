@@ -14,7 +14,7 @@ public partial class ListsPage : ContentPage
     public ListsPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
         BindingContext = this;
     }
 

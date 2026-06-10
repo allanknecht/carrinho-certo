@@ -44,19 +44,11 @@
                     </Grid>
                 </Border>
 
-                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Todos" BackgroundColor="#E5E7EB" TextColor="#111827" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
-                        <Button Text="Mercadão do Zé" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
-                        <Button Text="Mercearia da Esquina" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
-                        <Button Text="Hiper Mercado" BackgroundColor="White" TextColor="#616161" CornerRadius="10" HeightRequest="35" Padding="15,0" FontFamily="PoppinsBold" FontSize="12"/>
-                    </HorizontalStackLayout>
-                </ScrollView>
             </VerticalStackLayout>
 
             <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" HorizontalOptions="Center" VerticalOptions="Center" Color="#E80000" ZIndex="2"/>
 
-            <CollectionView ItemsSource="{Binding Products}" Margin="20,130,20,0">
+            <CollectionView ItemsSource="{Binding Products}" Margin="20,90,20,0">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:ProductItemViewModel">
 

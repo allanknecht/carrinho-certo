@@ -1,4 +1,6 @@
+using CarrinhoCerto.Models;
 using CarrinhoCerto.Pages.Scan;
+using CarrinhoCerto.Services;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -6,40 +8,46 @@ namespace CarrinhoCerto.Pages;
 
 public class PriceDropItem
 {
-    public string ProductName { get; set; }
-    public string PriceDescription { get; set; }
+    public string ProductName { get; set; } = "";
+    public string PriceDescription { get; set; } = "";
 }
 
 public partial class HomePage : ContentPage
 {
+    private readonly ApiService _apiService;
     public ObservableCollection<PriceDropItem> TopDrops { get; set; } = new();
 
     public HomePage()
     {
         InitializeComponent();
+        _apiService = ApiService.Shared;
         BindingContext = this;
-        LoadTopDrops();
     }
 
-    private void LoadTopDrops()
+    protected override async void OnAppearing()
     {
-        TopDrops.Add(new PriceDropItem
-        {
-            ProductName = "Óleo de Soja (900ml)",
-            PriceDescription = "R$ 5,49 no Atacadão"
-        });
+        base.OnAppearing();
+        await LoadHomeDataAsync();
+    }
 
-        TopDrops.Add(new PriceDropItem
+    private async Task LoadHomeDataAsync()
+    {
+        var user = await _apiService.GetCurrentUserAsync();
+        if (user != null)
         {
-            ProductName = "Leite Integral Tirol (1L)",
-            PriceDescription = "R$ 3,99 no Zaffari"
-        });
+            lbUser.Text = user.DisplayName;
+        }
 
-        TopDrops.Add(new PriceDropItem
+        var highlights = await _apiService.GetPriceHighlightsAsync(3);
+        TopDrops.Clear();
+        foreach (var item in highlights)
         {
-            ProductName = "Café Melitta (500g)",
-            PriceDescription = "R$ 14,90 no Maxxi"
-        });
+            TopDrops.Add(new PriceDropItem
+            {
+                ProductName = item.ProductName ?? "",
+                PriceDescription = item.PriceDescription ?? ""
+            });
+        }
     }
 
     private async void OnEnviarNotaTapped(object sender, TappedEventArgs e)

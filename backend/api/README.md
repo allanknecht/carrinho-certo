@@ -18,15 +18,14 @@ docker compose up --build
 
 API: `http://localhost:3000`. Set `DATABASE_URL` if running `bin/rails` outside Compose.
 
-## Demo data (`db:seed`)
+## Dados de desenvolvimento (`db:seed`)
 
-In **development**, `bin/rails db:seed` loads **`Seeds::PricingDemo`** (`db/seeds/pricing_demo.rb`): três lojas com observações de preço, dois produtos canónicos — para exercitar `GET /products/:id/prices` e listas/ranking.
+Em **development**, `bin/rails db:seed` carrega **`Seeds::ErechimMarketHistory`**: 3 mercados de Erechim/RS, 5 produtos, 2 notas por mercado (histórico de preço).
 
-- **Pular:** `SKIP_PRICING_DEMO_SEEDS=1 bin/rails db:seed`
-- **Forçar em outro ambiente:** `SEED_PRICING_DEMO=1 bin/rails db:seed`
-- **Manual:** `bin/rails runner "Seeds::PricingDemo.run!(force: true)"`
-
-Credenciais e ids são impressos no console. Testes: `bin/rails test test/integration/product_prices_demo_seeds_test.rb`.
+- **Pular:** `SKIP_ERECHIM_SEEDS=1 bin/rails db:seed`
+- **Recriar:** `SEED_ERECHIM_FORCE=1 bin/rails db:seed`
+- **Manual:** `bin/rails runner "load Rails.root.join('db/seeds/erechim_market_history.rb'); Seeds::ErechimMarketHistory.run!(force: true)"`
+- **Verificar:** `bin/rails runner script/verify_erechim_seed.rb`
 
 ## Product normalization + LLM (OpenRouter)
 

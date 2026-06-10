@@ -39,9 +39,9 @@ public class ProductViewModel : INotifyPropertyChanged
 
     public SolidColorPaint ChartBackground { get; set; } = new SolidColorPaint(SKColors.Transparent);
 
-    public ProductViewModel(int productId)
+    public ProductViewModel(int productId, ApiService? apiService = null)
     {
-        _apiService = new ApiService();
+        _apiService = apiService ?? ApiService.Shared;
         LoadDataAsync(productId);
     }
 
@@ -72,12 +72,6 @@ public class ProductViewModel : INotifyPropertyChanged
                 var chartPrices = orderedStores.Select(s =>
                     decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal p) ? (double)p : 0
                 ).Reverse().ToList();
-
-                if (chartPrices.Count == 1)
-                {
-                    var basePrice = chartPrices[0];
-                    chartPrices = new List<double> { basePrice * 1.15, basePrice * 1.05, basePrice * 1.10, basePrice * 1.02, basePrice };
-                }
 
                 PriceSeries = new ISeries[]
                 {

@@ -6,12 +6,12 @@ class ShoppingListsController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    lists = current_user.shopping_lists.order(updated_at: :desc).includes(:shopping_list_items)
+    lists = current_user.shopping_lists.order(updated_at: :desc).includes(shopping_list_items: :product_canonical)
     render json: { shopping_lists: lists.map { |list| list_payload(list, include_items: false) } }
   end
 
   def show
-    list = current_user.shopping_lists.includes(:shopping_list_items).find(params[:id])
+    list = current_user.shopping_lists.includes(shopping_list_items: :product_canonical).find(params[:id])
     render json: list_payload(list, include_items: true)
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Shopping list not found" }, status: :not_found

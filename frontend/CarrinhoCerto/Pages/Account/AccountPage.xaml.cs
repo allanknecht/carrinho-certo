@@ -1,17 +1,40 @@
+using System.ComponentModel;
 using CarrinhoCerto.Pages.Account;
 using CarrinhoCerto.Services;
 using Microsoft.Maui.Controls;
 
 namespace CarrinhoCerto.Pages;
 
-public partial class AccountPage : ContentPage
+public partial class AccountPage : ContentPage, INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
+
+    public string UserDisplayName { get; set; } = "Carregando...";
+    public string UserEmail { get; set; } = "";
 
     public AccountPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
+        BindingContext = this;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await LoadUserAsync();
+    }
+
+    private async Task LoadUserAsync()
+    {
+        var user = await _apiService.GetCurrentUserAsync();
+        if (user != null)
+        {
+            UserDisplayName = user.DisplayName;
+            UserEmail = user.Email ?? "";
+            OnPropertyChanged(nameof(UserDisplayName));
+            OnPropertyChanged(nameof(UserEmail));
+        }
     }
 
     private void OnAlterarSenhaTapped(object sender, TappedEventArgs e)
@@ -61,4 +84,9 @@ public partial class AccountPage : ContentPage
 
         ripple.Scale = 0;
     }
+
+    public new event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged(string propertyName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

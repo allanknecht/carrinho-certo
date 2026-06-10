@@ -16,8 +16,6 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProductItemViewModel> Products { get; } = new();
 
-    public ObservableCollection<StoreFilter> StoreFilters { get; } = new();
-
     private string _searchQuery;
     public string SearchQuery
     {
@@ -42,13 +40,9 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public SearchViewModel()
     {
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
         PerformSearchCommand = new Command(async () => await SearchProductsAsync());
         GoToProductCommand = new Command<int>(async (productId) => await GoToProductAsync(productId));
-
-        StoreFilters.Add(new StoreFilter { Name = "Todos", IsSelected = true });
-        StoreFilters.Add(new StoreFilter { Name = "Mercadões", IsSelected = false });
-        StoreFilters.Add(new StoreFilter { Name = "Hiper Mercado", IsSelected = false });
 
         _ = SearchProductsAsync();
     }
@@ -88,27 +82,16 @@ public class SearchViewModel : INotifyPropertyChanged
         IsLoading = false;
     }
 
-    private async Task GoToProductAsync(int productId)
+    private Task GoToProductAsync(int productId)
     {
-        if (Application.Current != null)
+        if (Application.Current?.Windows.Count > 0)
         {
-            Application.Current.MainPage = new Pages.ProductPage(productId);
+            Application.Current.Windows[0].Page = new Pages.ProductPage(productId);
         }
+        return Task.CompletedTask;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-}
-
-public class StoreFilter : INotifyPropertyChanged
-{
-    public string Name { get; set; }
-    private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set { _isSelected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected))); }
-    }
-    public event PropertyChangedEventHandler PropertyChanged;
 }

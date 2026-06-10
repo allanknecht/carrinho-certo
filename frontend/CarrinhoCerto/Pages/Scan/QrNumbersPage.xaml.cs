@@ -11,7 +11,7 @@ public partial class QrNumbersPage : ContentPage
     public QrNumbersPage()
     {
         InitializeComponent();
-        _apiService = new ApiService();
+        _apiService = ApiService.Shared;
     }
 
     private void OnVoltarTapped(object sender, TappedEventArgs e)

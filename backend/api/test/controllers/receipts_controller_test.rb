@@ -73,6 +73,38 @@ class ReceiptsControllerTest < ActionDispatch::IntegrationTest
     assert_equal chave, body["chave_acesso"]
   end
 
+  test "create requeues failed receipt with same chave instead of 409" do
+    chave = "43260352932793000180650040000458781305092705"
+    failed = Receipt.create!(
+      user: @user,
+      source_url: "https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=#{chave}",
+      status: "failed",
+      chave_acesso: chave,
+      processing_error: "SSL_connect failed"
+    )
+    url = "https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?p=#{chave}|3|1"
+
+    assert_no_difference("Receipt.count") do
+      assert_enqueued_with(job: ProcessReceiptJob, args: [failed.id]) do
+        post receipts_url,
+          params: { source_url: url }.to_json,
+          headers: {
+            "Content-Type" => "application/json",
+            "Authorization" => "Bearer #{@token}"
+          }
+      end
+    end
+
+    assert_response :accepted
+    body = JSON.parse(response.body)
+    assert_equal failed.id, body["id"]
+    assert_equal "queued", body["status"]
+    failed.reload
+    assert_equal "queued", failed.status
+    assert_nil failed.processing_error
+    assert_equal url, failed.source_url
+  end
+
   test "create returns 400 for invalid URL" do
     post receipts_url,
       params: { source_url: "not-a-url" }.to_json,
