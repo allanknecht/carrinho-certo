@@ -86,12 +86,17 @@ public class ListItem
     [JsonPropertyName("product_canonical_id")]
     public int? ProductId { get; set; }
 
-    public string DisplayNameFinal => !string.IsNullOrEmpty(ProductName) ? ProductName : $"Produto #{ProductId}";
-
     [JsonPropertyName("product_name")]
     public string? ProductName { get; set; }
 
-    public string QuantityFinal => !string.IsNullOrEmpty(QuantidadeRaw) ? $"Qtd: {QuantidadeRaw}" : "Qtd: 1";
+    public string DisplayNameFinal => !string.IsNullOrEmpty(ProductName) ? ProductName : $"Produto #{ProductId}";
+
+    public string QuantityFinal => !string.IsNullOrEmpty(QuantidadeRaw) ? $"Qtd: {QuantidadeRaw.Replace(".000", "")}" : "Qtd: 1";
+
+    [JsonIgnore]
+    public decimal EstimatedPrice { get; set; }
+
+    public string EstimatedPriceFinal => EstimatedPrice > 0 ? $"A partir de: R$ {EstimatedPrice:F2}" : "Buscando preço...";
 }
 
 public class MarketPriceSummary
