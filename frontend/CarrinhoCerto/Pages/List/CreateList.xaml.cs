@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CarrinhoCerto.Pages.List;
 
-public partial class CreateList : ContentPage, INotifyPropertyChanged
+public partial class CreateList : ContentPage
 {
     private readonly ApiService _apiService;
     private int _listId;
@@ -49,21 +49,20 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
     private async void OnEditListTapped(object sender, TappedEventArgs e)
     {
         if (ListData?.ListInfo == null) return;
-        
-        string novoNome = await DisplayPromptAsync("Editar", "Nome da lista:", initialValue: ListData.ListInfo.Name);
-        
+
+        string novoNome = await DisplayPromptAsync("Editar", "Novo nome da lista:", initialValue: ListData.ListInfo.Name);
+
         if (!string.IsNullOrWhiteSpace(novoNome) && novoNome != ListData.ListInfo.Name)
         {
             bool sucesso = await _apiService.UpdateListNameAsync(_listId, novoNome);
-            
+
             if (sucesso)
             {
-                ListData.ListInfo.Name = novoNome;
-                OnPropertyChanged(nameof(ListData));
+                await LoadListDetails();
             }
             else
             {
-                await DisplayAlert("Erro", "Não foi possível alterar o nome da lista agora.", "OK");
+                await DisplayAlert("Erro", "Não foi possível alterar o nome da lista. O servidor rejeitou.", "OK");
             }
         }
     }
@@ -71,11 +70,11 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
     private async void OnDeleteListTapped(object sender, TappedEventArgs e)
     {
         bool confirmou = await DisplayAlert("Atenção", "Tem certeza que deseja apagar esta lista?", "SIM", "NÃO");
-        
+
         if (confirmou)
         {
             bool sucesso = await _apiService.DeleteListAsync(_listId);
-            
+
             if (sucesso)
             {
                 OnVoltarTapped(null, null);
@@ -92,11 +91,11 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
         if (e.Parameter is int itemId)
         {
             bool confirmou = await DisplayAlert("Remover", "Tirar este produto da lista?", "SIM", "NÃO");
-            
+
             if (confirmou)
             {
                 bool sucesso = await _apiService.RemoveListItemAsync(_listId, itemId);
-                
+
                 if (sucesso)
                 {
                     await LoadListDetails();
@@ -112,7 +111,7 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
     private async void OnJogarListTapped(object sender, TappedEventArgs e)
     {
         await AnimarRipple(RippleEnviar, (View)sender, e);
-        
+
         Preferences.Set("LastActiveListId", _listId);
 
         var mainTab = new TabNav();
@@ -126,10 +125,6 @@ public partial class CreateList : ContentPage, INotifyPropertyChanged
         mainTab.CurrentPage = mainTab.Children[1];
         Application.Current.Windows[0].Page = mainTab;
     }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string name = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
     private async Task AnimarRipple(Microsoft.Maui.Controls.Shapes.Ellipse ripple, View container, TappedEventArgs e)
     {

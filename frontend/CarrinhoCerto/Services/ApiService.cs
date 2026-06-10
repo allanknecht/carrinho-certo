@@ -8,7 +8,7 @@ namespace CarrinhoCerto.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://192.168.3.14:3000";
+    private const string BaseUrl = "http://10.156.23.70:3000";
 
     public ApiService()
     {
@@ -142,14 +142,24 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[JSON RECEBIDO] {content}");
-
+                System.Diagnostics.Debug.WriteLine($"[JSON RECEBIDO LISTAS] {content}");
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                var wrapper = JsonSerializer.Deserialize<ShoppingListsWrapper>(content, options);
-                if (wrapper?.ShoppingLists != null) return wrapper.ShoppingLists;
+                var doc = JsonDocument.Parse(content);
 
-                return JsonSerializer.Deserialize<List<ShoppingList>>(content, options) ?? new List<ShoppingList>();
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    return JsonSerializer.Deserialize<List<ShoppingList>>(content, options) ?? new List<ShoppingList>();
+                }
+
+                if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("shopping_lists", out var listElem))
+                {
+                    return JsonSerializer.Deserialize<List<ShoppingList>>(listElem.GetRawText(), options) ?? new List<ShoppingList>();
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERRO HTTP LISTAS] Status: {response.StatusCode}");
             }
         }
         catch (Exception ex)
@@ -166,27 +176,53 @@ public class ApiService
             await SetAuthHeaderAsync();
 
             var payload = new { name = name };
-            var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{BaseUrl}/shopping_lists", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize<ShoppingList>(responseContent, options);
-            }
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            else
-            {
-                var erroRails = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[ERRO AO CRIAR LISTA] {response.StatusCode}: {erroRails}");
+                var doc = System.Text.Json.JsonDocument.Parse(responseContent);
+                if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object && doc.RootElement.TryGetProperty("shopping_list", out var listElem))
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<ShoppingList>(listElem.GetRawText(), options);
+                }
+
+                return System.Text.Json.JsonSerializer.Deserialize<ShoppingList>(responseContent, options);
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[EXCEÇÃO] {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ERRO CRIAR] {ex.Message}");
         }
         return null;
+    }
+
+    public async Task<bool> UpdateListNameAsync(int listId, string newName)
+    {
+        try
+        {
+            await SetAuthHeaderAsync();
+
+            var payload = new { name = newName };
+            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PatchAsync($"{BaseUrl}/shopping_lists/{listId}", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                response = await _httpClient.PutAsync($"{BaseUrl}/shopping_lists/{listId}", content);
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task<ListDetailsResponse> GetListDetailsAsync(int listId)
@@ -204,7 +240,7 @@ public class ApiService
                 listInfo = JsonSerializer.Deserialize<ShoppingList>(content, options);
             }
 
-            List<ListItem> items = new List<ListItem>();
+            List<ListItem> itemsRaw = new List<ListItem>();
             var itemsResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/items");
             if (itemsResponse.IsSuccessStatusCode)
             {
@@ -212,26 +248,111 @@ public class ApiService
                 var doc = JsonDocument.Parse(content);
                 if (doc.RootElement.TryGetProperty("items", out var itemsElem))
                 {
-                    items = JsonSerializer.Deserialize<List<ListItem>>(itemsElem.GetRawText(), options);
+                    itemsRaw = JsonSerializer.Deserialize<List<ListItem>>(itemsElem.GetRawText(), options) ?? new List<ListItem>();
+                }
+            }
+
+            List<ListItem> items = new List<ListItem>();
+            foreach (var rawItem in itemsRaw)
+            {
+                if (rawItem.ProductId == null) continue;
+
+                var existente = items.FirstOrDefault(i => i.ProductId == rawItem.ProductId);
+                if (existente != null)
+                {
+                    double q1 = 1, q2 = 1;
+                    double.TryParse(existente.QuantidadeRaw?.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out q1);
+                    double.TryParse(rawItem.QuantidadeRaw?.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out q2);
+
+                    existente.QuantidadeRaw = (q1 + q2).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    items.Add(rawItem);
                 }
             }
 
             List<MarketPriceSummary> rankings = new List<MarketPriceSummary>();
-            var rankingResponse = await _httpClient.GetAsync($"{BaseUrl}/shopping_lists/{listId}/store_rankings");
-            if (rankingResponse.IsSuccessStatusCode)
+            var totaisPorMercado = new Dictionary<string, decimal>();
+            var contagemProdutosPorMercado = new Dictionary<string, int>();
+
+            int totalDeProdutosDiferentesNaLista = items.Count;
+
+            if (items.Any())
             {
-                var content = await rankingResponse.Content.ReadAsStringAsync();
-                var doc = JsonDocument.Parse(content);
-                if (doc.RootElement.TryGetProperty("stores", out var storesElem))
+                foreach (var item in items)
                 {
-                    rankings = JsonSerializer.Deserialize<List<MarketPriceSummary>>(storesElem.GetRawText(), options);
+                    if (item.ProductId.HasValue)
+                    {
+                        var pricesResponse = await GetProductPricesAsync(item.ProductId.Value);
+
+                        if (pricesResponse != null)
+                        {
+                            item.ProductName = pricesResponse.Product?.DisplayName;
+
+                            double qtd = 1.0;
+                            if (!string.IsNullOrEmpty(item.QuantidadeRaw))
+                            {
+                                double.TryParse(item.QuantidadeRaw.Replace(".000", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out qtd);
+                            }
+
+                            if (pricesResponse.Stores != null && pricesResponse.Stores.Any())
+                            {
+                                var menorPrecoProduto = pricesResponse.Stores
+                                    .Select(s => decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) ? p : 0)
+                                    .Where(p => p > 0)
+                                    .OrderBy(p => p)
+                                    .FirstOrDefault();
+
+                                item.EstimatedPrice = menorPrecoProduto;
+
+                                var lojasValidasProduto = pricesResponse.Stores
+                                    .GroupBy(s => !string.IsNullOrEmpty(s.Nome) ? s.Nome : $"Mercado {s.StoreId}")
+                                    .Select(g => new {
+                                        StoreName = g.Key,
+                                        LowestPrice = g.Select(s => decimal.TryParse(s.UnitPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) ? p : 0).Where(p => p > 0).Min()
+                                    }).Where(x => x.LowestPrice > 0);
+
+                                foreach (var store in lojasValidasProduto)
+                                {
+                                    if (!totaisPorMercado.ContainsKey(store.StoreName))
+                                    {
+                                        totaisPorMercado[store.StoreName] = 0;
+                                        contagemProdutosPorMercado[store.StoreName] = 0;
+                                    }
+
+                                    totaisPorMercado[store.StoreName] += (store.LowestPrice * (decimal)qtd);
+                                    contagemProdutosPorMercado[store.StoreName]++;
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+
+            foreach (var kvp in totaisPorMercado)
+            {
+                if (contagemProdutosPorMercado[kvp.Key] == totalDeProdutosDiferentesNaLista)
+                {
+                    rankings.Add(new MarketPriceSummary
+                    {
+                        MarketName = kvp.Key,
+                        TotalPrice = kvp.Value
+                    });
+                }
+            }
+
+            rankings = rankings.OrderBy(r => r.TotalPrice).ToList();
+
+            if (listInfo != null)
+            {
+                listInfo.ItemCount = items.Count;
             }
 
             return new ListDetailsResponse
             {
-                ListInfo = listInfo ?? new ShoppingList { Name = "Minha Lista" },
-                Items = items ?? new List<ListItem>(),
+                ListInfo = listInfo ?? new ShoppingList { Name = "Minha Lista", ItemCount = items.Count },
+                Items = items,
                 BestMarket = rankings.FirstOrDefault(),
                 TopMarkets = rankings.Take(3).ToList()
             };
@@ -281,23 +402,6 @@ public class ApiService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[ERRO AO EXCLUIR] {ex.Message}");
-            return false;
-        }
-    }
-
-    public async Task<bool> UpdateListNameAsync(int listId, string newName)
-    {
-        try
-        {
-            await SetAuthHeaderAsync();
-            var payload = new { shopping_list = new { name = newName } };
-            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PatchAsync($"{BaseUrl}/shopping_lists/{listId}", content);
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
             return false;
         }
     }

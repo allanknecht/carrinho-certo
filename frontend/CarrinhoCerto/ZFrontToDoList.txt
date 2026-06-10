@@ -1,3 +1,0 @@
-﻿{FRONTEND} FINAL To-Do List:
-[ ] Ajustar para aparecer o nome do produto na lista ao invés do ID
-[ ] Ajustar para aparecer o valor do produto na lista e em ONDE DOI MENOS NO BOLSO e no TOP3 MERCADOS
